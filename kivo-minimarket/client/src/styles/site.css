@@ -30,10 +30,27 @@ body {
   transition: background .3s,box-shadow .3s,transform .45s cubic-bezier(.2,.8,.2,1),opacity .35s;
 }
 
+/* Menú escondido (arriba de todo): se van el logo y los links,
+   pero el cartelito de abierto/cerrado queda siempre a la vista */
+.topbar .brand,
+.topbar .nav {
+  transition: transform .45s cubic-bezier(.2,.8,.2,1), opacity .35s;
+}
+
 .topbar.hide {
-  transform: translateY(-110%);
-  opacity: 0;
   pointer-events: none;
+}
+
+.topbar.hide .brand,
+.topbar.hide .nav {
+  transform: translateY(-140%);
+  opacity: 0;
+}
+
+.topbar.hide .status-pill {
+  pointer-events: auto;
+  background: rgba(8,16,11,.55);
+  backdrop-filter: blur(6px);
 }
 
 .topbar.solid {
@@ -264,53 +281,55 @@ body {
   }
 }
 
-.welcome {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  text-align: center;
-  opacity: 0;
-  pointer-events: none;
+/* Cartel "KIVO Mini Market": neón siempre prendido, con resplandor */
+.kivo-neon {
+  filter: drop-shadow(0 0 6px rgba(124,195,95,.75)) drop-shadow(0 0 18px rgba(240,164,63,.35));
 }
 
-.welcome .card {
-  max-width: 560px;
-  padding: clamp(26px,4vw,46px);
-  border-radius: 28px;
-  background: var(--paper);
-  box-shadow: 0 30px 80px rgba(0,0,0,.35);
+/* Cartel de neón ABIERTO / CERRADO (cuelga delante de la cortina).
+   Apagado con la cortina baja; "lit" lo pone hero-motion.js al empezar a deslizar. */
+.neon-sign text {
+  fill: #33433a;
+  transition: fill .3s;
 }
 
-.welcome h2 {
-  font-size: clamp(30px,5vw,54px);
-  font-weight: 800;
-  line-height: 1;
-  color: var(--green-d);
+.neon-sign .box {
+  stroke: #26352b;
+  transition: stroke .3s;
 }
 
-.welcome h2 em {
-  font-style: normal;
-  color: var(--orange);
+.neon-sign.lit.open text {
+  fill: #6dff8e;
+  animation: neon-on .9s both, neon-flicker 6s .9s infinite;
 }
 
-.welcome h2 em.closed {
-  color: var(--red);
+.neon-sign.lit.open .box {
+  stroke: #2f8f4a;
 }
 
-.welcome p {
-  margin: 14px 0 22px;
-  font-size: 17px;
-  color: var(--muted);
+.neon-sign.lit.closed text {
+  fill: #ff4b4b;
+  animation: neon-on .9s both, neon-flicker 8s .9s infinite;
 }
 
-.welcome .btns {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  pointer-events: auto;
+.neon-sign.lit.closed .box {
+  stroke: #9b2a2a;
+}
+
+/* Al prenderse: titila un par de veces antes de quedar fijo */
+@keyframes neon-on {
+  0%, 12%, 30%, 48% { opacity: .15; }
+  6%, 22%, 40%, 100% { opacity: 1; }
+}
+
+/* Ya prendido: casi siempre fijo, a veces titila */
+@keyframes neon-flicker {
+  0%, 18%, 20.5%, 23%, 61%, 63.5%, 100% { opacity: 1; }
+  19%, 22%, 62% { opacity: .35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-sign text { animation: none !important; }
 }
 
 /* ---------- Secciones (estructura común) ---------- */
@@ -369,25 +388,60 @@ section.block {
   }
 }
 
-/* ---------- Cinta de avisos ---------- */
+/* ---------- Cinta de avisos: cartel LED de cancha de fútbol (letras nítidas, sin resplandor) ---------- */
 .marquee {
+  position: relative;
   overflow: hidden;
   white-space: nowrap;
-  padding: 14px 0;
-  background: var(--green-d);
-  color: #fff;
+  background: #050607;
+  border-top: 4px solid #1a1e21;
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 20px;
+  font-weight: 800;
+  font-size: clamp(17px,2.3vw,25px);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+/* Franja de pasto abajo del cartel */
+.marquee:after {
+  content: "";
+  display: block;
+  height: 10px;
+  background: repeating-linear-gradient(90deg,#3f8f34 0 60px,#357d2c 60px 120px);
 }
 
 .marquee div {
-  display: inline-block;
-  animation: marquee 28s linear infinite;
+  display: inline-flex;
+  animation: marquee 32s linear infinite;
 }
 
+/* Cada aviso es un panel del cartel, con su color */
 .marquee span {
-  margin: 0 26px;
+  --led: #7dff6a;
+  display: inline-flex;
+  align-items: center;
+  padding: 16px 38px;
+  border-right: 3px solid #14181b;
+  color: var(--led);
+}
+
+.marquee span:nth-child(4n+2) {
+  --led: #ffb347;
+}
+
+.marquee span:nth-child(4n+3) {
+  color: #050607;
+  background: #7dff6a;
+}
+
+.marquee span:nth-child(4n) {
+  --led: #ffffff;
+}
+
+/* Si el sistema pide menos movimiento, el cartel pasa más despacio
+   (le gana a la regla de base.css que apaga todas las animaciones) */
+@media (prefers-reduced-motion: reduce) {
+  .marquee div { animation: marquee 60s linear infinite !important; }
 }
 
 @keyframes marquee {
@@ -654,9 +708,14 @@ section.block {
 }
 
 .prod .thumb img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /* La foto se ve entera (no se corta) y el fondo blanco se funde con el color de la tarjeta */
+  object-fit: contain;
+  padding: 6px;
+  mix-blend-mode: multiply;
 }
 
 .prod .badge {
@@ -922,6 +981,92 @@ section.block {
   color: #fff;
 }
 
+.footer .staff-link {
+  padding: 8px 14px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #c4d2c2;
+  transition: border-color .2s, color .2s;
+}
+
+.footer .staff-link:hover {
+  border-color: #fff;
+  color: #fff;
+}
+
+/* Medios de pago al pie */
+.footer .payments {
+  max-width: 1240px;
+  margin: 0 auto 34px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+.footer .payments h4 {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: #fff;
+}
+
+.footer .payments ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer .pay {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--pay);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--pay) 25%, transparent);
+}
+
+.footer .pay.italic {
+  font-style: italic;
+  font-size: 17px;
+}
+
+.footer .pay .dots {
+  display: inline-flex;
+}
+
+.footer .pay .dots i {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #eb001b;
+}
+
+.footer .pay .dots i + i {
+  margin-left: -7px;
+  background: #f79e1b;
+  mix-blend-mode: multiply;
+}
+
+@media (max-width:560px) {
+  .footer .pay {
+    min-height: 34px;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
+
+
 /* ---------- Botón flotante de la canasta ---------- */
 .fab {
   position: fixed;
@@ -973,6 +1118,205 @@ section.block {
 @keyframes bump {
   40% {
     transform: scale(1.15);
+  }
+}
+
+/* ---------- Canasta chiquita que aparece sola al agregar algo ---------- */
+.cart-peek {
+  position: fixed;
+  top: 84px;
+  right: clamp(14px,3vw,30px);
+  z-index: 59;
+  width: min(340px,calc(100vw - 28px));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(10,20,12,.28);
+  opacity: 0;
+  transform: translateX(30px) scale(.96);
+  transform-origin: top right;
+  pointer-events: none;
+  transition: opacity .25s, transform .4s cubic-bezier(.2,1.3,.4,1);
+}
+
+.cart-peek.show {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+/* Con el chat abierto en compu, aparece a la izquierda del chat para no taparlo */
+@media (min-width:561px) {
+  body.chat-open .cart-peek {
+    top: auto;
+    bottom: clamp(14px,3vw,30px);
+    right: calc(clamp(14px,3vw,30px) + min(400px,calc(100vw - 28px)) + 14px);
+  }
+}
+
+/* En el celular el chat ocupa toda la pantalla y ya avisa lo que suma */
+@media (max-width:560px) {
+  .cart-peek {
+    top: 72px;
+    left: 14px;
+    right: 14px;
+    width: auto;
+  }
+  body.chat-open .cart-peek {
+    display: none;
+  }
+}
+
+.peek-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px 8px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--green-d);
+}
+
+.peek-check {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  font-size: 13px;
+}
+
+.peek-close {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f2f1ea;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.peek-item {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px 10px;
+  animation: pop .35s cubic-bezier(.2,1.4,.4,1);
+}
+
+.peek-item .emoji {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  font-size: 28px;
+}
+
+.peek-item .emoji {
+  overflow: hidden;
+}
+
+.peek-item .emoji img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  mix-blend-mode: multiply;
+}
+
+.peek-item .name b {
+  display: block;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.peek-item .name small {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.peek-item .qty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 99px;
+  background: #f2f1ea;
+}
+
+.peek-item .qty button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  font-weight: 800;
+  box-shadow: 0 1px 2px rgba(0,0,0,.1);
+}
+
+.peek-item .qty span {
+  min-width: 18px;
+  text-align: center;
+  font-weight: 800;
+}
+
+.peek-others {
+  margin: 0 14px 10px;
+  padding: 8px 12px;
+  list-style: none;
+  border-radius: 12px;
+  background: #f2f1ea;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.peek-others li {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.peek-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px 14px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.peek-foot b {
+  font-family: var(--font-display);
+  color: var(--green-d);
+}
+
+.peek-foot .btn {
+  padding: 10px 18px;
+}
+
+/* Barrita que se va achicando hasta que se esconde */
+.peek-timer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--orange);
+  transform-origin: left;
+  animation: peek-timer linear forwards;
+}
+
+@keyframes peek-timer {
+  to {
+    transform: scaleX(0);
   }
 }
 
@@ -1579,13 +1923,37 @@ section.block {
   font-size: 16px;
 }
 
+.chat-head > div:nth-child(2) {
+  min-width: 0;
+}
+
 .chat-head small {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-size: 12.5px;
   opacity: .8;
 }
 
-.chat-head .close-btn {
+.chat-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin-left: auto;
+}
+
+.chat-cart {
+  padding: 7px 11px;
+  border-radius: 99px;
+  background: var(--orange);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.chat-head .close-btn {
   background: rgba(255,255,255,.12);
   border-color: rgba(255,255,255,.2);
   color: #fff;
@@ -1673,10 +2041,76 @@ section.block {
   }
 }
 
+/* Tira que se desliza para el costado (tarjetas y sugerencias del chat) */
+.side-scroll {
+  position: relative;
+  flex: none;
+  min-width: 0;
+}
+
+.side-scroll[hidden] {
+  display: none;
+}
+
+.side-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  margin-top: -17px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--deep);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 4px 14px rgba(10,20,12,.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+
+.side-arrow.left {
+  left: -6px;
+}
+
+.side-arrow.right {
+  right: -6px;
+}
+
+.side-scroll.more-left .side-arrow.left,
+.side-scroll.more-right .side-arrow.right {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Las sugerencias tienen margen propio: las flechas van más adentro */
+.side-scroll:has(.chat-chips) .side-arrow.left { left: 6px; }
+.side-scroll:has(.chat-chips) .side-arrow.right { right: 6px; }
+.side-scroll:has(.chat-chips) .side-arrow {
+  width: 30px;
+  height: 30px;
+  margin-top: -20px;
+  font-size: 19px;
+}
+
+.chat-cards.dragging,
+.chat-chips.dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  user-select: none;
+}
+
 .chat-cards {
   display: flex;
   gap: 10px;
   overflow-x: auto;
+  scroll-snap-type: x proximity;
+  cursor: grab;
   padding: 2px 2px 6px;
   scrollbar-width: none;
 }
@@ -1687,6 +2121,7 @@ section.block {
 
 .chat-card {
   flex: none;
+  scroll-snap-align: start;
   width: 140px;
   display: flex;
   flex-direction: column;
@@ -1698,6 +2133,7 @@ section.block {
 }
 
 .chat-card .thumb {
+  position: relative;
   height: 70px;
   display: grid;
   place-items: center;
@@ -1707,9 +2143,14 @@ section.block {
 }
 
 .chat-card .thumb img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /* La foto se ve entera (no se corta) y el fondo blanco se funde con el color de la tarjeta */
+  object-fit: contain;
+  padding: 6px;
+  mix-blend-mode: multiply;
 }
 
 .chat-card b {
