@@ -2247,3 +2247,152 @@ section.block {
   text-align: center;
   color: var(--muted);
 }
+
+/* ---------- Celular: más aire y tamaños a medida de la pantalla ----------
+   Va al final para ganarle a las reglas de arriba. */
+@media (max-width:560px) {
+  /* Secciones: un poco menos de espacio arriba y abajo, títulos más chicos */
+  section.block {
+    padding: 44px 18px;
+  }
+  .h2 {
+    font-size: clamp(28px,8.4vw,34px);
+    line-height: 1.05;
+  }
+  .lead {
+    font-size: 15.5px;
+    line-height: 1.45;
+  }
+
+  /* Combo del día */
+  .combo {
+    margin-top: 24px;
+    border-radius: 24px;
+  }
+  .combo-art {
+    min-height: 210px;
+  }
+  .price-burst {
+    width: 136px;
+    height: 136px;
+  }
+  .price-burst strong {
+    font-size: 38px;
+  }
+  .combo-info {
+    gap: 12px;
+    padding: 22px 18px;
+  }
+  .combo-info h3 {
+    font-size: 24px;
+    line-height: 1.1;
+  }
+  .combo-info li {
+    padding: 9px 10px;
+    font-size: 14px;
+  }
+
+  /* Góndolas: entran dos productos enteros y se asoma el siguiente */
+  .tabs {
+    padding-top: 18px;
+  }
+  .tab {
+    padding: 9px 14px;
+    font-size: 13.5px;
+  }
+  .shelf {
+    gap: 12px;
+    padding: 8px 2px 30px;
+  }
+  .prod {
+    width: calc(50vw - 32px);
+    min-width: 148px;
+    padding: 10px;
+    gap: 4px;
+  }
+  .prod .thumb {
+    height: 104px;
+    font-size: 50px;
+  }
+  .prod h4 {
+    min-height: 34px;
+    font-size: 14px;
+  }
+  .prod .meta {
+    font-size: 12px;
+  }
+  .prod .price {
+    font-size: 19px;
+  }
+  .add {
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
+  }
+
+  /* Encargos */
+  .orders {
+    gap: 14px;
+    margin-top: 24px;
+  }
+  .order-card {
+    padding: 20px;
+    border-radius: 20px;
+  }
+  .order-card .emo {
+    font-size: 42px;
+  }
+  .order-card h3 {
+    font-size: 21px;
+  }
+
+  /* Horarios y mapa: el estado entra en una línea y la tabla respira */
+  .visit {
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .hours,
+  .mapcard {
+    padding: 18px;
+    border-radius: 20px;
+  }
+  .big-status {
+    gap: 10px;
+    font-size: 20px;
+  }
+  .big-status .dot {
+    width: 12px;
+    height: 12px;
+  }
+  .hours td {
+    padding: 11px 2px;
+    font-size: 14px;
+  }
+  .hours td:first-child {
+    padding-right: 10px;
+  }
+  .hours tr.today td:first-child:after {
+    display: inline-block;
+    margin-left: 6px;
+  }
+  .mapcard address {
+    font-size: 16px;
+  }
+
+  /* Burbuja del chat: una sola línea, sin tapar el botón */
+  .chat-bubble {
+    right: 80px;
+    max-width: calc(100vw - 110px);
+    padding: 10px 12px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  /* Pie */
+  .footer {
+    padding: 36px 18px 110px;
+  }
+  .footer .payments ul {
+    gap: 8px;
+  }
+}
