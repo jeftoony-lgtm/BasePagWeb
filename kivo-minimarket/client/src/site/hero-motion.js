@@ -38,12 +38,25 @@ export function startHero({ hero, scene, copy, hint, topbar }) {
    * del local (a la vista) y termina justo afuera del borde derecho.
    */
   function fitToScreen() {
-    const ratio = innerWidth / innerHeight;
+    // Alto que de verdad se ve (en el celular, sin las barras del navegador)
+    const width = scene.clientWidth || innerWidth;
+    const height = scene.clientHeight || innerHeight;
+    const ratio = width / height;
+    copy.style.top = "";
     if (ratio < 1) {
-      // Celular parado: encuadre más cerrado para que el cartel entre entero (se ve de x=330 a x=870)
-      el.svg.setAttribute("viewBox", "330 -170 540 970");
-      el.svg.setAttribute("preserveAspectRatio", "xMidYMax meet");
-      Object.assign(layout, { cartFrom: 350, cartTo: 870 + 10, zoom: 0.55 });
+      // Celular parado: el cartel (x=330 a 870) entra entero con un margen a los costados,
+      // y la vereda (y≈790) queda apoyada abajo. Lo que sobra arriba es cielo.
+      const viewW = 600, left = 300, bottom = 790;
+      const viewH = viewW / ratio;
+      const top = bottom - viewH;
+      el.svg.setAttribute("viewBox", `${left} ${top.toFixed(1)} ${viewW} ${viewH.toFixed(1)}`);
+      el.svg.setAttribute("preserveAspectRatio", "xMidYMax slice");
+      Object.assign(layout, { cartFrom: left + 48, cartTo: left + viewW + 10, zoom: 0.55 });
+
+      // El título va centrado en el cielo, entre el menú y el techo del local (y=200)
+      const sky = (200 - top) * (width / viewW);
+      const menu = 64;
+      copy.style.top = `${Math.max(menu, menu + (sky - menu - copy.offsetHeight) / 2).toFixed(0)}px`;
     } else {
       // Compu: en pantallas anchas y bajas se ve entero (sin cortarse arriba).
       // El alto del dibujo (970) llena la pantalla, así que el ancho visible es 970 × proporción.

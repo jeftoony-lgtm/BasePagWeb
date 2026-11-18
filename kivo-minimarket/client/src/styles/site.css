@@ -190,6 +190,8 @@ body {
   position: sticky;
   top: 0;
   height: 100vh;
+  /* En el celular: solo lo que se ve, sin contar las barras del navegador */
+  height: 100svh;
   overflow: hidden;
   display: grid;
   place-items: center;
@@ -240,6 +242,7 @@ body {
 .scroll-hint {
   position: absolute;
   bottom: 5vh;
+  bottom: 5svh;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -2251,6 +2254,15 @@ section.block {
 /* ---------- Celular: más aire y tamaños a medida de la pantalla ----------
    Va al final para ganarle a las reglas de arriba. */
 @media (max-width:560px) {
+  /* Entrada: título más grande, que llene el cielo */
+  .hero-copy h1 {
+    font-size: clamp(36px,11vw,46px);
+  }
+  .hero-copy p {
+    margin-top: 14px;
+    font-size: 16px;
+  }
+
   /* Secciones: un poco menos de espacio arriba y abajo, títulos más chicos */
   section.block {
     padding: 44px 18px;
