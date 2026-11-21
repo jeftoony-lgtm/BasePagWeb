@@ -7,7 +7,7 @@
 
 import { useRef, useState } from "react";
 import { api } from "../../api.js";
-import { normalize, price, OPERACIONES, ESTADOS, TIPOS, estadosDe, ajustarEstado, cerrada, mapEmbed } from "../../lib/format.js";
+import { normalize, price, OPERACIONES, ESTADOS, TIPOS, estadosDe, ajustarEstado, cerrada, mapEmbed, DEPARTAMENTOS, CIUDADES, ORIENTACIONES, CONSERVACION, SERVICIOS_CASA, lugar, refCode } from "../../lib/format.js";
 import { useAdmin } from "../state.js";
 import { useModal, useToast, useShowError, Switch, SheetHead, SaveBar } from "../ui.jsx";
 import { preparePhoto } from "../photo.js";
@@ -17,8 +17,9 @@ const MAX_FOTOS = 20;
 
 const EMPTY = {
   titulo: "", operacion: "venta", estado: "disponible", tipo: "casa",
-  barrio: "", direccion: "", moneda: "USD", precio: "", precio_extra: "",
-  dormitorios: "", banos: "", metros: "",
+  departamento: "", ciudad: "", barrio: "", direccion: "", moneda: "USD", precio: "", precio_extra: "",
+  dormitorios: "", banos: "", metros: "", metros_terreno: "", piso: "", orientacion: "", conservacion: "", garaje: false,
+  gastos_comunes: "", contribucion: "", servicios: [],
   caracteristicas: [], descripcion: "", fotos: [], publicada: true, destacada: false,
   ubicacion: null, ubicacion_aproximada: false,
 };
@@ -26,6 +27,62 @@ const EMPTY = {
 // Se recuerdan al cambiar de sección
 let lastFilter = "todas";
 let lastSearch = "";
+
+/* =================== Elegir de una lista (o escribir otra) =================== */
+// Para la ciudad y la zona: se elige de la lista y, si no está, "Otra…" deja escribirla
+const OTRA = "__otra__";
+
+function ChoiceField({ id, label, value, options, onChange, empty, placeholder, disabled }) {
+  const known = !value || options.some((o) => normalize(o) === normalize(value));
+  const [typing, setTyping] = useState(!known);
+  const showInput = typing || !known;
+
+  return (
+    <div className="field"><label htmlFor={id}>{label}</label>
+      <select id={id} disabled={disabled} value={showInput ? OTRA : options.find((o) => normalize(o) === normalize(value)) || ""}
+        onChange={(e) => {
+          const v = e.target.value;
+          setTyping(v === OTRA);
+          onChange(v === OTRA ? "" : v);
+        }}>
+        <option value="">{empty}</option>
+        {options.map((o) => <option key={o} value={o}>{o}</option>)}
+        <option value={OTRA}>Otra… (escribirla)</option>
+      </select>
+      {showInput && <input style={{ marginTop: 6 }} maxLength={80} placeholder={placeholder} autoFocus={typing && !value}
+        value={value} onChange={(e) => onChange(e.target.value)} />}
+    </div>
+  );
+}
+
+/** Lista sin vacíos ni repetidos ("Centro" y "centro" cuentan como una), en orden alfabético */
+function distintos(lista) {
+  const vistos = new Map();
+  for (const x of lista.map((v) => (v || "").trim()).filter(Boolean)) if (!vistos.has(normalize(x))) vistos.set(normalize(x), x);
+  return [...vistos.values()].sort((a, b) => a.localeCompare(b, "es"));
+}
+
+/* =================== Aviso de "Precio rebajado" =================== */
+// El servidor pone el cartel solo cuando el precio baja. Acá se avisa y se puede quitar.
+function RebajaNote({ original, p, onQuitar }) {
+  if (!original) return null;
+  const nuevo = p.precio === "" ? null : Number(p.precio);
+  const mismaMoneda = p.moneda === original.moneda;
+  const baja = mismaMoneda && nuevo != null && original.precio != null && nuevo < original.precio;
+  const tiene = original.precio_anterior != null && mismaMoneda && nuevo != null && nuevo < original.precio_anterior;
+
+  if (p.quitar_rebaja) {
+    return <p className="small muted">Al guardar se quita el cartel “Precio rebajado”. <button type="button" className="link-btn" onClick={() => onQuitar(false)}>Deshacer</button></p>;
+  }
+  if (!baja && !tiene) return null;
+  const antes = original.precio_anterior ?? original.precio;
+  return (
+    <p className="small rebaja-note">
+      🏷️ {baja && !tiene ? "Bajaste el precio: al guardar" : "Esta publicación"} va a mostrar el cartel <b>“Precio rebajado”</b> (antes {original.moneda === "UYU" ? "$" : "USD"} {Number(antes).toLocaleString("es-UY")}, tachado).{" "}
+      <button type="button" className="link-btn" onClick={() => onQuitar(true)}>Quitar cartel</button>
+    </p>
+  );
+}
 
 /* =================== Ubicación en el mapa =================== */
 // Se pega el link de Google Maps; el servidor saca las coordenadas y se ve el mapa antes de guardar
@@ -143,7 +200,7 @@ function PhotoManager({ fotos, onChange, onBusy }) {
 /* =================== Crear / editar publicación =================== */
 
 function PropertyForm({ original }) {
-  const { setProperties, settings } = useAdmin();
+  const { properties, setProperties, settings } = useAdmin();
   const { close, confirm } = useModal();
   const toast = useToast();
   const showError = useShowError();
@@ -151,7 +208,7 @@ function PropertyForm({ original }) {
 
   const [p, setP] = useState(() => (isNew ? { ...EMPTY } : {
     ...EMPTY, ...original,
-    precio: original.precio ?? "", dormitorios: original.dormitorios ?? "", banos: original.banos ?? "", metros: original.metros ?? "",
+    precio: original.precio ?? "", dormitorios: original.dormitorios ?? "", banos: original.banos ?? "", metros: original.metros ?? "", metros_terreno: original.metros_terreno ?? "",
   }));
   // Las características se escriben una por renglón
   const [features, setFeatures] = useState(() => (original?.caracteristicas || []).join("\n"));
@@ -160,8 +217,16 @@ function PropertyForm({ original }) {
   const set = (changes) => setP((current) => ({ ...current, ...changes }));
   const field = (key) => ({ value: p[key] ?? "", onChange: (e) => set({ [key]: e.target.value }) });
 
+  // Ciudades del departamento elegido (más las que ya se usaron ahí) y zonas que ya se usaron en esa ciudad
+  const mismoLugar = (x) => x.departamento === p.departamento && normalize(x.ciudad || "") === normalize(p.ciudad || "");
+  const ciudades = distintos([...(CIUDADES[p.departamento] || []), ...properties.filter((x) => x.departamento === p.departamento).map((x) => x.ciudad)]);
+  const zonas = p.ciudad ? distintos(properties.filter(mismoLugar).map((x) => x.barrio)) : [];
+
   const caracteristicas = features.split(/\n|·/).map((c) => c.trim()).filter(Boolean);
   const preview = { ...p, caracteristicas, precio: p.precio === "" ? null : Number(p.precio) };
+  // En la vista previa ya se ve el cartel "Precio rebajado" si se bajó el precio (como va a quedar al guardar)
+  if (p.quitar_rebaja || preview.precio == null || p.moneda !== original?.moneda) preview.precio_anterior = null;
+  else if (original?.precio != null && preview.precio < original.precio) preview.precio_anterior = Math.max(original.precio_anterior ?? 0, original.precio);
 
   // ¿Cambió algo desde que se abrió? (una publicación nueva siempre se puede guardar)
   const initial = useRef(JSON.stringify([p, features]));
@@ -185,7 +250,7 @@ function PropertyForm({ original }) {
   async function save() {
     const property = { ...p, titulo: p.titulo.trim(), caracteristicas };
     if (!property.titulo) { setError("Falta el título."); return false; }
-    for (const key of ["precio", "dormitorios", "banos", "metros"]) {
+    for (const key of ["precio", "dormitorios", "banos", "metros", "metros_terreno"]) {
       if (property[key] !== "" && (Number(property[key]) < 0 || Number.isNaN(Number(property[key])))) {
         setError("Revisá los números: no pueden ser negativos.");
         return false;
@@ -229,7 +294,21 @@ function PropertyForm({ original }) {
         </div>
 
         <div className="grid2">
-          <div className="field"><label htmlFor="pBarrio">Barrio / zona</label><input id="pBarrio" placeholder="Ej: Barrio Olimar" {...field("barrio")} /></div>
+          <div className="field"><label htmlFor="pDepto">Departamento</label>
+            <select id="pDepto" value={p.departamento} onChange={(e) => set({ departamento: e.target.value, ciudad: "", barrio: "" })}>
+              <option value="">Elegí el departamento…</option>
+              {DEPARTAMENTOS.map((d) => <option key={d} value={d}>{d}</option>)}
+            </select></div>
+          <ChoiceField key={`c-${p.departamento}`} id="pCity" label="Ciudad / localidad" value={p.ciudad} options={ciudades}
+            empty={p.departamento ? "Elegí la ciudad…" : "Primero el departamento"} placeholder="Ej: Melo, Río Branco"
+            onChange={(ciudad) => set({ ciudad, barrio: "" })} />
+        </div>
+
+        <div className="grid2">
+          {/* La zona se escribe libre; abajo sugiere las que ya se usaron en esa ciudad */}
+          <div className="field"><label htmlFor="pBarrio">Zona / barrio</label>
+            <input id="pBarrio" list="pZonas" maxLength={80} placeholder="Ej: Centro, Barrio Olimar" {...field("barrio")} />
+            <datalist id="pZonas">{zonas.map((z) => <option key={z} value={z} />)}</datalist></div>
           <div className="field"><label htmlFor="pAddress">Dirección (opcional)</label><input id="pAddress" placeholder="Ej: Calle 3 entre 14 y 16" {...field("direccion")} /></div>
         </div>
 
@@ -244,12 +323,60 @@ function PropertyForm({ original }) {
           <div className="field"><label htmlFor="pExtra">Aclaración</label>
             <input id="pExtra" maxLength={40} placeholder={p.operacion === "alquiler" ? "Ej: por mes" : "Ej: + cuotas"} {...field("precio_extra")} /></div>
         </div>
+        <RebajaNote original={original} p={p} onQuitar={(quitar_rebaja) => set({ quitar_rebaja })} />
 
         <div className="grid3">
           <div className="field"><label htmlFor="pRooms">Dormitorios</label><input id="pRooms" type="number" inputMode="numeric" min="0" {...field("dormitorios")} /></div>
           <div className="field"><label htmlFor="pBaths">Baños</label><input id="pBaths" type="number" inputMode="numeric" min="0" {...field("banos")} /></div>
-          <div className="field"><label htmlFor="pM2">m²</label><input id="pM2" type="number" inputMode="numeric" min="0" {...field("metros")} /></div>
+          <div className="field"><label htmlFor="pFloor">Piso</label><input id="pFloor" maxLength={20} placeholder="Ej: 3 o Planta baja" {...field("piso")} /></div>
         </div>
+
+        <div className="grid2">
+          <div className="field"><label htmlFor="pM2">m² edificados</label><input id="pM2" type="number" inputMode="numeric" min="0" {...field("metros")} /></div>
+          <div className="field"><label htmlFor="pLand">m² de terreno</label><input id="pLand" type="number" inputMode="numeric" min="0" {...field("metros_terreno")} /></div>
+        </div>
+
+        <div className="grid2">
+          <div className="field"><label htmlFor="pOrient">Orientación (hacia dónde da el frente)</label>
+            <select id="pOrient" {...field("orientacion")}>
+              <option value="">Sin aclarar</option>
+              {Object.entries(ORIENTACIONES).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+            </select></div>
+          <div className="field"><label htmlFor="pCond">Estado de la propiedad</label>
+            <select id="pCond" {...field("conservacion")}>
+              <option value="">Sin aclarar</option>
+              {Object.entries(CONSERVACION).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+            </select></div>
+        </div>
+
+        <div className="grid2">
+          <div className="field"><span className="label">Garaje</span>
+            <div className="segmented">
+              <button type="button" className={p.garaje ? "on" : ""} onClick={() => set({ garaje: true })}>Tiene</button>
+              <button type="button" className={!p.garaje ? "on" : ""} onClick={() => set({ garaje: false })}>No tiene</button>
+            </div></div>
+          <div />
+        </div>
+
+        <div className="grid2">
+          <div className="field"><label htmlFor="pCommon">Gastos comunes</label>
+            <input id="pCommon" maxLength={40} placeholder="Ej: $ 3.500 por mes" {...field("gastos_comunes")} /></div>
+          <div className="field"><label htmlFor="pTax">Contribución inmobiliaria</label>
+            <input id="pTax" maxLength={40} placeholder="Ej: $ 6.000 por año" {...field("contribucion")} /></div>
+        </div>
+
+        <div className="field"><span className="label">Servicios que tiene (tocá los que correspondan)</span>
+          <div className="toggle-chips">
+            {SERVICIOS_CASA.map((s) => {
+              const on = p.servicios.includes(s);
+              return (
+                <button type="button" key={s} className={on ? "on" : ""} aria-pressed={on}
+                  onClick={() => set({ servicios: on ? p.servicios.filter((x) => x !== s) : [...p.servicios, s] })}>
+                  {on ? "✓ " : ""}{s}
+                </button>
+              );
+            })}
+          </div></div>
 
         <div className="field"><label htmlFor="pFeatures">Características (una por renglón)</label>
           <textarea id="pFeatures" rows={4} placeholder={"Living con estufa a leña\nParrillero cerrado\nPiscina"} value={features} onChange={(e) => setFeatures(e.target.value)} /></div>
@@ -300,7 +427,8 @@ function matches(p, filter) {
 }
 
 export function Publicaciones() {
-  const { properties, setProperties } = useAdmin();
+  const { properties, setProperties, settings } = useAdmin();
+  const code = (p) => refCode(p, settings.inmobiliaria?.nombre);
   const { open, confirm } = useModal();
   const toast = useToast();
   const showError = useShowError();
@@ -323,7 +451,7 @@ export function Publicaciones() {
 
   const query = normalize(search.trim());
   const list = properties.filter((p) => matches(p, filter)
-    && (!query || normalize(`${p.titulo} ${p.barrio} ${p.direccion}`).includes(query)));
+    && (!query || (normalize(`${p.titulo} ${p.barrio} ${p.ciudad} ${p.departamento} ${p.direccion} ${code(p)}`).includes(query) || (/^\d+$/.test(query) && p.ref === Number(query)))));
 
   return (
     <>
@@ -331,7 +459,7 @@ export function Publicaciones() {
         <div><h2>Publicaciones</h2><p>Lo que subas acá aparece en la página al instante.</p></div>
         <button className="btn btn-orange" onClick={() => open(<PropertyForm />)}>＋ Nueva publicación</button>
       </div>
-      <input className="input" placeholder="🔎 Buscar por título, barrio o dirección…" value={search} onChange={(e) => onSearch(e.target.value)} style={{ marginBottom: 12 }} />
+      <input className="input" placeholder="🔎 Buscar por código (Ref.), título, ciudad, barrio o dirección…" value={search} onChange={(e) => onSearch(e.target.value)} style={{ marginBottom: 12 }} />
       <div className="chips">
         {FILTERS.map((f) => (
           <button key={f.id} className={`chip${filter === f.id ? " on" : ""}`} onClick={() => pickFilter(f.id)}>
@@ -354,7 +482,7 @@ export function Publicaciones() {
                   {p.destacada && <span title="Destacada">📌 </span>}{p.titulo}
                   {!p.publicada && <span className="hiddenTag">BORRADOR</span>}
                 </h4>
-                <div className="sub">{OPERACIONES[p.operacion]} · {TIPOS[p.tipo]}{p.barrio ? ` · ${p.barrio}` : ""} · {p.fotos.length} {p.fotos.length === 1 ? "foto" : "fotos"}</div>
+                <div className="sub">{p.ref != null && <b className="ref-code">{code(p)}</b>}{p.ref != null && " · "}{OPERACIONES[p.operacion]} · {TIPOS[p.tipo]}{lugar(p) ? ` · ${lugar(p)}` : ""} · {p.fotos.length} {p.fotos.length === 1 ? "foto" : "fotos"}</div>
                 <div className="price">{price(p)}</div>
               </div>
               <div className="prop-ctrl">

@@ -13,6 +13,7 @@ export const DEFAULT_SETTINGS = {
     descripcion: "Compra, venta y asesoría en inversiones inmobiliarias.",
     whatsapp: "59899787834",   // con código de país, sin + ni espacios
     instagram: "jtcventasyalquileres",
+    email: "jtcventasyalquileres@gmail.com",
     servicios: [
       "Rapidez",
       "Valor real del mercado",
@@ -26,22 +27,22 @@ export const DEFAULT_SETTINGS = {
 
 export const EXAMPLE_PROPERTIES = [
   {
-    titulo: "Casa con piscina y parrillero", operacion: "alquiler", tipo: "casa", barrio: "Barrio Olimar",
+    titulo: "Casa con piscina y parrillero", operacion: "alquiler", tipo: "casa", departamento: "Treinta y Tres", ciudad: "Treinta y Tres", barrio: "Barrio Olimar",
     moneda: "UYU", precio: null, dormitorios: 3, banos: 2, destacada: true,
     caracteristicas: ["3 dormitorios", "2 baños", "Living con estufa a leña", "Cocina diseñada a medida", "Parrillero cerrado", "Piscina", "Garaje para dos autos"],
   },
   {
-    titulo: "Casa en esquina, lista para banco", operacion: "venta", tipo: "casa", barrio: "Centro",
+    titulo: "Casa en esquina, lista para banco", operacion: "venta", tipo: "casa", departamento: "Treinta y Tres", ciudad: "Treinta y Tres", barrio: "Centro",
     moneda: "USD", precio: 80000, dormitorios: 3, banos: 1,
     caracteristicas: ["3 dormitorios", "Living", "Cocina/comedor", "Baño", "Patio cerrado", "Sobre esquina", "Lista para banco"],
   },
   {
-    titulo: "Local comercial con salón grande", operacion: "alquiler", tipo: "local", barrio: "Virrey Arredondo",
+    titulo: "Local comercial con salón grande", operacion: "alquiler", tipo: "local", departamento: "Treinta y Tres", ciudad: "Treinta y Tres", barrio: "Virrey Arredondo",
     moneda: "UYU", precio: 14000, precio_extra: "por mes",
     caracteristicas: ["Local comercial", "Salón grande", "Dos piezas", "Baño", "Excelente ubicación"],
   },
   {
-    titulo: "Dos casas en un padrón", operacion: "venta", estado: "vendida", tipo: "casa", barrio: "Laguna Merín",
+    titulo: "Dos casas en un padrón", operacion: "venta", estado: "vendida", tipo: "casa", departamento: "Treinta y Tres", ciudad: "Treinta y Tres", barrio: "Laguna Merín",
     moneda: "USD", precio: 98000,
     caracteristicas: ["Dos casas en un padrón", "Ubicada en calle 3 entre calles 14 y 16", "Excelente oportunidad de inversión"],
   },
