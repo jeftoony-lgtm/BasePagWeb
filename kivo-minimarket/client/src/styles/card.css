@@ -1,0 +1,192 @@
+/* =====================================================================
+   INMOBILIARIA · Tarjeta de propiedad (site/Card.jsx)
+   La usan la página y la vista previa del panel.
+   ===================================================================== */
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+
+.brand > span {
+  text-align: left;
+}
+
+.brand svg {
+  width: 30px;
+  height: 30px;
+  flex: none;
+}
+
+.brand b {
+  display: block;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 24px;
+  letter-spacing: .02em;
+}
+
+.brand small {
+  display: block;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.pcard {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: left;
+  background: var(--green);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(42,33,26,.14);
+  transition: transform .2s,box-shadow .2s;
+}
+
+button.pcard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(42,33,26,.22);
+}
+
+button.pcard:focus-visible {
+  outline: 3px solid var(--orange);
+  outline-offset: 3px;
+}
+
+.pcard-photo {
+  position: relative;
+  aspect-ratio: 4/3.4;
+  overflow: hidden;
+  background: var(--green-d);
+}
+
+.pcard-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pcard-empty {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: rgba(255,255,255,.55);
+}
+
+.pcard-empty svg {
+  width: 38%;
+  height: 38%;
+}
+
+.pcard-top {
+  position: absolute;
+  inset: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 14px 30px;
+  color: #fff;
+  background: linear-gradient(rgba(0,0,0,.42),transparent);
+}
+
+.pcard-op {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px,4.6vw,30px);
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0,0,0,.4);
+}
+
+.pcard-top .brand b {
+  font-size: 20px;
+}
+
+.pcard-top .brand svg {
+  width: 24px;
+  height: 24px;
+}
+
+.pcard-ribbon {
+  position: absolute;
+  left: -16%;
+  top: 42%;
+  width: 90%;
+  padding: 10px 0;
+  transform: rotate(-24deg);
+  background: var(--green);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(24px,5vw,34px);
+  text-align: center;
+  text-transform: uppercase;
+  box-shadow: 0 6px 16px rgba(0,0,0,.3);
+}
+
+.pcard-count {
+  position: absolute;
+  right: 10px;
+  bottom: 38px;
+  padding: 4px 9px;
+  border-radius: 99px;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pcard-info {
+  margin: -26px 12px 12px;
+  position: relative;
+  padding: 10px 12px 12px;
+  border-radius: 10px;
+  background: rgba(255,253,249,.94);
+  color: var(--green-d);
+  text-align: center;
+}
+
+.pcard-pill {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  background: var(--green);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.pcard-pill span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pcard-pill b {
+  white-space: nowrap;
+}
+
+.pcard-info p {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  line-height: 1.45;
+}
+
+.pcard.closed .pcard-photo img {
+  filter: saturate(.75);
+}

@@ -1,5 +1,5 @@
 // =====================================================================
-//  KIVO · Entrar y crear cuenta (panel)
+//  INMOBILIARIA · Entrar y crear cuenta (panel)
 //  La PRIMERA cuenta que se crea queda como dueño activo. Las demás quedan
 //  inactivas hasta que el dueño las activa en Equipo.
 // =====================================================================

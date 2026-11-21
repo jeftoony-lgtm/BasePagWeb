@@ -1,5 +1,5 @@
 // =====================================================================
-//  KIVO PANEL · Entrar, crear cuenta y "olvidé mi contraseña"
+//  INMOBILIARIA PANEL · Entrar, crear cuenta y "olvidé mi contraseña"
 //  La primera cuenta que se crea queda como dueño. Las demás esperan
 //  a que el dueño las active en Equipo.
 // =====================================================================
@@ -8,12 +8,12 @@ import { useState } from "react";
 import { api } from "../api.js";
 
 const TEXTS = {
-  login:  { title: "Panel del local",      subtitle: "Entrá con tu mail y tu contraseña.",                button: "Entrar" },
+  login:  { title: "Panel de publicaciones",      subtitle: "Entrá con tu mail y tu contraseña.",                button: "Entrar" },
   signup: { title: "Crear cuenta",         subtitle: "Después de crearla, el dueño tiene que activarla.",   button: "Crear cuenta" },
   forgot: { title: "Olvidé mi contraseña", subtitle: "Pedile al dueño que te ponga una contraseña nueva desde Equipo. Si sos el dueño, mirá el README (npm run hacer-dueno).", button: null },
 };
 
-const Logo = () => <div className="logo"><svg><use href="#cart" /></svg><b>KIV<i>O</i></b></div>;
+export const Logo = () => <div className="logo"><svg><use href="#logo" /></svg><b>JTC<small>Ventas y alquileres</small></b></div>;
 
 export function AuthScreen({ onLoggedIn }) {
   const [mode, setMode] = useState("login");
@@ -52,7 +52,7 @@ export function AuthScreen({ onLoggedIn }) {
 
         <form noValidate onSubmit={onSubmit}>
           {mode === "signup" && (
-            <div className="field"><label htmlFor="authName">Tu nombre</label><input id="authName" autoComplete="name" placeholder="Ej: Tita" {...field("name")} /></div>
+            <div className="field"><label htmlFor="authName">Tu nombre</label><input id="authName" autoComplete="name" placeholder="Ej: Juan" {...field("name")} /></div>
           )}
           {mode !== "forgot" && (
             <>

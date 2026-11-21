@@ -1,5 +1,5 @@
 // =====================================================================
-//  KIVO · Registro de actividad (quién hizo qué desde el panel)
+//  INMOBILIARIA · Registro de actividad (quién hizo qué desde el panel)
 //  Lo ve el dueño en Equipo → Actividad.
 // =====================================================================
 

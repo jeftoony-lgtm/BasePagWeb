@@ -1,5 +1,5 @@
 {
-  "name": "kivo-server",
+  "name": "inmobiliaria-server",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,6 @@
     "hacer-dueno": "node scripts/hacer-dueno.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": ">=0.136.0",
     "bcryptjs": "^3.0.2",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",

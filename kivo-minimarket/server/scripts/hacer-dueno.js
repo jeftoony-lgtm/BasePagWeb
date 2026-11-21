@@ -1,6 +1,6 @@
 // =====================================================================
-//  KIVO · Hacer dueño a una cuenta (y, si hace falta, ponerle contraseña)
-//  Para cuando el dueño se olvidó la contraseña o hay que pasarle el local a otro.
+//  INMOBILIARIA · Hacer dueño a una cuenta (y, si hace falta, ponerle contraseña)
+//  Para cuando el dueño se olvidó la contraseña o hay que pasarle la inmobiliaria a otro.
 //
 //    npm run hacer-dueno -w server -- mail@dueno.com
 //    npm run hacer-dueno -w server -- mail@dueno.com contraseñaNueva

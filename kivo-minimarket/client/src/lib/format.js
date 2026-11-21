@@ -1,43 +1,57 @@
 // =====================================================================
-//  KIVO · Funciones chicas que usan la página y el panel
+//  INMOBILIARIA · Funciones chicas que usan la página y el panel
 // =====================================================================
 
-/** Precio en pesos uruguayos: 1650 → "$1.650" */
-export const money = (n) => "$" + Number(n || 0).toLocaleString("es-UY");
-
-/** Saca tildes y mayúsculas para comparar textos: "Almacén" → "almacen" */
+/** Saca tildes y mayúsculas para comparar textos: "Olimar Chico" → "olimar chico" */
 export const normalize = (text) => String(text).toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
 
-/** Limita un número entre un mínimo y un máximo */
-export const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
+/* ---------- Propiedades ---------- */
+export const OPERACIONES = { venta: "En venta", alquiler: "En alquiler" };
+export const ESTADOS = { disponible: "Disponible", reservada: "Reservada", vendida: "Vendida", alquilada: "Alquilada" };
 
-/** Curva de animación suave (empieza rápido y frena) */
-export const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+/** Estados posibles según la operación: una casa en venta se vende, una en alquiler se alquila */
+export const estadosDe = (operacion) => ["disponible", "reservada", operacion === "alquiler" ? "alquilada" : "vendida"];
 
-/** Primer emoji de un texto: "🥔 Lay's Clásicas" → "🥔" */
-export const firstEmoji = (text) => (String(text).match(/\p{Extended_Pictographic}/u) || [""])[0];
+/** Al cambiar de venta a alquiler (o al revés), "vendida" pasa a "alquilada" y viceversa */
+export const ajustarEstado = (operacion, estado) =>
+  (estado === "vendida" || estado === "alquilada" ? (operacion === "alquiler" ? "alquilada" : "vendida") : estado);
 
-/** ¿La persona pidió menos animaciones en su sistema? */
-export const prefersReducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+/** ¿Ya se vendió o alquiló? */
+export const cerrada = (p) => p.estado === "vendida" || p.estado === "alquilada";
 
-/** Lee y guarda en sessionStorage sin romper si el navegador no lo permite */
-export const tabStorage = {
-  get(key, fallback = null) {
-    try { return JSON.parse(sessionStorage.getItem(key)) ?? fallback; } catch { return fallback; }
-  },
-  set(key, value) {
-    try { sessionStorage.setItem(key, JSON.stringify(value)); } catch { /* nada */ }
-  },
-};
+export const TIPOS = { casa: "Casa", apartamento: "Apartamento", local: "Local comercial", terreno: "Terreno", oficina: "Oficina", otro: "Otro" };
+
+/** Precio de una propiedad: "USD 80.000", "$ 14.000 por mes" o "Consultar" */
+export function price(p) {
+  if (p.precio === null || p.precio === undefined || p.precio === "") return "Consultar";
+  const amount = Number(p.precio).toLocaleString("es-UY");
+  return `${p.moneda === "UYU" ? "$" : "USD"} ${amount}${p.precio_extra ? ` ${p.precio_extra}` : ""}`;
+}
+
+/** El cartel diagonal de la foto: "¡Vendida!", "¡Alquilada!", "Reservada" o nada */
+export function ribbon(p) {
+  if (p.estado === "vendida") return "¡Vendida!";
+  if (p.estado === "alquilada") return "¡Alquilada!";
+  if (p.estado === "reservada") return "Reservada";
+  return "";
+}
+
+/** Link de WhatsApp con un mensaje ya escrito */
+export const whatsappLink = (number, text) =>
+  `https://wa.me/${String(number || "").replace(/\D/g, "")}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
+
+/** "59899787834" → "+598 99 787 834" */
+export function prettyWhatsapp(number) {
+  const digits = String(number || "").replace(/\D/g, "");
+  const m = digits.match(/^598(\d{2})(\d{3})(\d{3})$/);
+  return m ? `+598 ${m[1]} ${m[2]} ${m[3]}` : digits;
+}
 
 /* ---------- Fechas (siempre en hora de Uruguay) ---------- */
 const TIME_ZONE = "America/Montevideo";
 
 export const formatDate = (iso, options) =>
   new Intl.DateTimeFormat("es-UY", { timeZone: TIME_ZONE, ...options }).format(new Date(iso));
-
-/** "2026-11-13" del día de esa fecha en Uruguay */
-export const dayKey = (iso) => new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE }).format(new Date(iso));
 
 /** "recién", "hace 5 min", "hace 2 h" o la fecha */
 export function timeAgo(iso) {
@@ -48,6 +62,3 @@ export function timeAgo(iso) {
   if (hours < 24) return `hace ${hours} h`;
   return formatDate(iso, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
-
-/** "099123456" → "099 123 456" */
-export const prettyPhone = (phone) => (phone ? String(phone).replace(/^(\d{3})(\d{3})(\d{3})$/, "$1 $2 $3") : "");

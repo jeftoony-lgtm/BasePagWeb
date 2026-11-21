@@ -1,8 +1,8 @@
 // =====================================================================
-//  KIVO · Base de datos (MongoDB con Mongoose)
+//  INMOBILIARIA · Base de datos (MongoDB con Mongoose)
 //  Cada "colección" de MongoDB es como una tabla. Acá se define qué
 //  campos tiene cada una. Los nombres de los campos son los mismos que
-//  usa la página (precio, en_stock, created_at...).
+//  usa la página (precio, operacion, created_at...).
 // =====================================================================
 
 import mongoose from "mongoose";
@@ -32,101 +32,59 @@ const userSchema = new Schema({
 }, options);
 export const User = model("User", userSchema);
 
-/* ---------- Catálogo ---------- */
-const categorySchema = new Schema({
-  _id: String, // "bebidas", "snacks"...
-  nombre: { type: String, required: true },
-  emoji: { type: String, default: "🛒" },
-  orden: { type: Number, default: 0 },
-}, { toJSON });
-export const Category = model("Category", categorySchema);
+/* ---------- Propiedades (las publicaciones) ---------- */
+export const OPERACIONES = ["venta", "alquiler"];
+export const ESTADOS = ["disponible", "reservada", "vendida", "alquilada"];
+// Una casa en venta se "vende" y una en alquiler se "alquila": el cierre depende de la operación
+const CIERRE = { venta: "vendida", alquiler: "alquilada" };
+export const TIPOS = ["casa", "apartamento", "local", "terreno", "oficina", "otro"];
 
-const productSchema = new Schema({
-  categoria: { type: String, required: true, ref: "Category" },
-  nombre: { type: String, required: true, trim: true, maxlength: 120 },
-  detalle: { type: String, default: "", trim: true, maxlength: 120 },
-  precio: { type: Number, required: true, min: 0, validate: Number.isInteger }, // pesos uruguayos, sin centavos
-  emoji: { type: String, default: "🛒" },
-  color: { type: String, default: "#f4f4f4" },
-  foto_url: { type: String, default: null },
-  en_stock: { type: Boolean, default: true },
-  activo: { type: Boolean, default: true }, // false = no se muestra en la página
-  orden: { type: Number, default: 0 },
+const propertySchema = new Schema({
+  titulo: { type: String, required: true, trim: true, maxlength: 120 },     // "Casa con piscina en Barrio Olimar"
+  operacion: { type: String, enum: OPERACIONES, required: true },
+  estado: { type: String, enum: ESTADOS, default: "disponible" },
+  tipo: { type: String, enum: TIPOS, default: "casa" },
+  barrio: { type: String, default: "", trim: true, maxlength: 80 },         // "Barrio Olimar", "Centro"
+  direccion: { type: String, default: "", trim: true, maxlength: 160 },
+  moneda: { type: String, enum: ["USD", "UYU"], default: "USD" },
+  precio: { type: Number, default: null, min: 0 },                         // null = "Consultar"
+  precio_extra: { type: String, default: "", trim: true, maxlength: 40 },  // "+ cuotas", "por mes"
+  dormitorios: { type: Number, default: null, min: 0, max: 50 },
+  banos: { type: Number, default: null, min: 0, max: 50 },
+  metros: { type: Number, default: null, min: 0 },                         // m² edificados
+  caracteristicas: { type: [String], default: [] },                        // ["Piscina", "Garaje para dos autos"]
+  descripcion: { type: String, default: "", trim: true, maxlength: 4000 },
+  fotos: { type: [String], default: [] },                                  // la primera es la portada
+  publicada: { type: Boolean, default: true },  // false = borrador, no se ve en la página
+  destacada: { type: Boolean, default: false }, // aparece primero (como los posts fijados)
 }, options);
-export const Product = model("Product", productSchema);
+propertySchema.index({ destacada: -1, created_at: -1 });
 
-/* ---------- Fotos de productos (se guardan dentro de la base) ---------- */
+// Si quedó "alquilada" una casa en venta (o al revés, por ejemplo al cambiar la operación), se corrige sola
+propertySchema.pre("validate", function () {
+  if (["vendida", "alquilada"].includes(this.estado)) this.estado = CIERRE[this.operacion];
+});
+export const Property = model("Property", propertySchema, "propiedades");
+
+/** Corrige las publicaciones viejas que quedaron con el cierre equivocado (se llama al arrancar) */
+export async function fixEstados() {
+  await Property.updateMany({ operacion: "venta", estado: "alquilada" }, { estado: "vendida" });
+  await Property.updateMany({ operacion: "alquiler", estado: "vendida" }, { estado: "alquilada" });
+}
+
+/* ---------- Fotos (se guardan dentro de la base) ---------- */
 const photoSchema = new Schema({
   data: { type: Buffer, required: true },
-  tipo: { type: String, required: true }, // "image/jpeg", "image/png"...
+  tipo: { type: String, required: true }, // "image/jpeg", "image/webp"...
 }, { timestamps });
 export const Photo = model("Photo", photoSchema);
 
-/* ---------- Configuración (combo, ruleta, horarios, avisos, whatsapp, cerrado, asistente) ---------- */
+/* ---------- Configuración (datos de la inmobiliaria: nombre, whatsapp, redes...) ---------- */
 const settingSchema = new Schema({
-  _id: String, // la "key": "combo", "ruleta"...
+  _id: String, // la "key": "inmobiliaria"
   value: { type: Schema.Types.Mixed, required: true },
 }, { timestamps, minimize: false });
 export const Setting = model("Setting", settingSchema);
-
-/* ---------- Pedidos ---------- */
-const orderSchema = new Schema({
-  _id: Number, // número correlativo (#1001, #1002...), sale de "counters"
-  nombre: { type: String, required: true, trim: true, minlength: 1, maxlength: 80 },
-  telefono: { type: String, default: null },
-  modo: { type: String, enum: ["retiro", "envio"], required: true },
-  direccion: { type: String, default: null, maxlength: 200 },
-  dia: { type: String, default: null },  // "2026-11-13"
-  hora: { type: String, default: null }, // "20:30"
-  nota: { type: String, default: "", maxlength: 500 },
-  items: [{ _id: false, id: String, nombre: String, cantidad: Number, precio: { type: Number, default: null } }],
-  total: { type: Number, default: 0 },
-  estado: { type: String, enum: ["nuevo", "preparando", "listo", "entregado", "cancelado"], default: "nuevo" },
-}, options);
-orderSchema.index({ created_at: -1 });
-export const Order = model("Order", orderSchema);
-
-const counterSchema = new Schema({ _id: String, seq: { type: Number, default: 1000 } });
-const Counter = model("Counter", counterSchema);
-
-/** Siguiente número de pedido (1001, 1002...) sin repetir aunque lleguen dos a la vez */
-export async function nextOrderId() {
-  const counter = await Counter.findByIdAndUpdate("orders", { $inc: { seq: 1 } }, { new: true, upsert: true });
-  return counter.seq;
-}
-
-/** Para los datos de ejemplo: que el próximo pedido siga después de los cargados */
-export async function setOrderCounter(value) {
-  await Counter.findByIdAndUpdate("orders", { seq: value }, { upsert: true });
-}
-
-/* ---------- Clientes y ruleta ---------- */
-const customerSchema = new Schema({
-  nombre: { type: String, required: true, trim: true, maxlength: 60 },
-  telefono: { type: String, required: true, unique: true },
-  acepta_promos: { type: Boolean, default: false },
-}, options);
-export const Customer = model("Customer", customerSchema);
-
-const spinSchema = new Schema({
-  customer: { type: Schema.Types.ObjectId, ref: "Customer", required: true },
-  promo_id: { type: String, required: true },
-  indice: { type: Number, required: true },
-  premio: { type: String, default: null }, // null = no ganó
-  code: { type: String, default: null },
-  vence: { type: Date, default: null },
-  canjeado_at: { type: Date, default: null },
-  canjeado_por: { type: Schema.Types.ObjectId, ref: "User", default: null },
-}, options);
-spinSchema.index({ customer: 1, promo_id: 1 }, { unique: true }); // un giro por persona por promo
-spinSchema.index({ code: 1 }, { unique: true, partialFilterExpression: { code: { $type: "string" } } });
-export const Spin = model("Spin", spinSchema, "giros");
-
-/* ---------- Búsquedas sin resultado (para saber qué piden y no hay) ---------- */
-const searchSchema = new Schema({
-  termino: { type: String, required: true, minlength: 2, maxlength: 60 },
-}, { timestamps: { createdAt: "created_at", updatedAt: false }, toJSON });
-export const Search = model("Search", searchSchema, "busquedas");
 
 /* ---------- Registro de actividad (quién hizo qué) ---------- */
 const activitySchema = new Schema({
@@ -138,13 +96,3 @@ const activitySchema = new Schema({
 }, { timestamps: { createdAt: "created_at", updatedAt: false }, toJSON, minimize: false });
 activitySchema.index({ created_at: -1 });
 export const Activity = model("Activity", activitySchema, "actividad");
-
-/* ---------- Contador de mensajes del asistente (para limitar el gasto de la IA) ---------- */
-const assistantUsageSchema = new Schema({
-  dia: { type: String, required: true },   // "2026-11-13" (hora de Uruguay)
-  clave: { type: String, required: true }, // "total" o una IP anonimizada
-  mensajes: { type: Number, default: 0 },
-  creado: { type: Date, default: Date.now, expires: 60 * 60 * 24 * 30 }, // se borra solo a los 30 días
-});
-assistantUsageSchema.index({ dia: 1, clave: 1 }, { unique: true });
-export const AssistantUsage = model("AssistantUsage", assistantUsageSchema, "asistente_uso");

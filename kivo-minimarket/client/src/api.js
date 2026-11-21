@@ -1,8 +1,8 @@
 // =====================================================================
-//  KIVO · Conexión con el servidor
+//  INMOBILIARIA · Conexión con el servidor
 //  Todo lo que la página y el panel leen o guardan pasa por acá.
 //  Uso:  import { api } from "../api.js";
-//        const productos = await api.products();
+//        const propiedades = await api.properties();
 // =====================================================================
 
 const TOKEN_KEY = "kivo-token";
@@ -70,49 +70,20 @@ export const api = {
     return user;
   },
 
-  /* ---------- Catálogo ---------- */
-  categories: () => get("/categories"),
-  products: () => get("/products"),
-  saveProduct: (p) => (p.id ? put(`/products/${p.id}`, p) : post("/products", p)),
-  deleteProduct: (id) => request("DELETE", `/products/${id}`),
-  setStock: (id, enStock) => patch(`/products/${id}/stock`, { en_stock: enStock }),
+  /* ---------- Publicaciones ---------- */
+  properties: () => get("/propiedades"),
+  property: (id) => get(`/propiedades/${id}`),
+  saveProperty: (p) => (p.id ? put(`/propiedades/${p.id}`, p) : post("/propiedades", p)),
+  deleteProperty: (id) => request("DELETE", `/propiedades/${id}`),
   async uploadPhoto(file) {
     const form = new FormData();
     form.append("foto", file);
     return (await post("/photos", form)).url;
   },
 
-  /* ---------- Configuración del local ---------- */
+  /* ---------- Datos de la inmobiliaria ---------- */
   settings: () => get("/settings"),
   saveSetting: (key, value) => put(`/settings/${key}`, { value }),
-
-  /* ---------- Pedidos ---------- */
-  orders: (days = 30) => get(`/orders?days=${days}`),
-  setOrderState: (id, estado) => patch(`/orders/${id}`, { estado }),
-  // keepalive: se manda igual aunque la persona se vaya a WhatsApp
-  createOrder: (order) => post("/orders", order, { keepalive: true }),
-
-  /** Pedidos en vivo. Devuelve una función para cortar la conexión */
-  onOrders(callback) {
-    const source = new EventSource(`/api/orders/events?token=${encodeURIComponent(session.token || "")}`);
-    source.onmessage = (event) => {
-      try {
-        const { type, order } = JSON.parse(event.data);
-        callback(type, order);
-      } catch { /* mensaje roto: se ignora */ }
-    };
-    return () => source.close();
-  },
-
-  /* ---------- Ruleta y clientes ---------- */
-  spin: (nombre, telefono, acepta) => post("/ruleta/girar", { nombre, telefono, acepta }),
-  redeem: (code) => post("/ruleta/canjear", { code }),
-  customers: () => get("/customers"),
-  logSearch: (termino) => post("/busquedas", { termino }).catch(() => { /* no importa si falla */ }),
-  searches: (days = 30) => get(`/busquedas?days=${days}`),
-
-  /* ---------- Asistente ---------- */
-  chat: (messages, cart) => post("/asistente", { messages, cart }),
 
   /* ---------- Equipo ---------- */
   profiles: () => get("/profiles"),

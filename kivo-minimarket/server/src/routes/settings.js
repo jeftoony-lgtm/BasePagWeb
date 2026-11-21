@@ -1,6 +1,5 @@
 // =====================================================================
-//  KIVO · Configuración del local
-//  (combo, ruleta, horarios, avisos, whatsapp, cerrado hoy, asistente)
+//  INMOBILIARIA · Configuración (nombre, eslogan, WhatsApp, servicios...)
 //  Todos la leen (la página la necesita); solo el dueño la cambia.
 // =====================================================================
 
@@ -13,7 +12,7 @@ import { DEFAULT_SETTINGS } from "../seed-data.js";
 
 export const router = Router();
 
-/** Todos los ajustes: { combo: {...}, ruleta: {...}, ... } (con valores por defecto si falta alguno) */
+/** Todos los ajustes: { inmobiliaria: {...} } (con valores por defecto si falta alguno) */
 export async function loadSettings() {
   const rows = await Setting.find();
   return { ...structuredClone(DEFAULT_SETTINGS), ...Object.fromEntries(rows.map((r) => [r._id, r.value])) };

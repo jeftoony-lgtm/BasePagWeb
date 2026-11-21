@@ -1,48 +1,34 @@
 // =====================================================================
-//  KIVO PANEL · Equipo (solo dueño)
+//  INMOBILIARIA PANEL · Equipo (solo dueño)
 //  Quién entra al panel (activar, quitar acceso, cambiar rol, poner
 //  contraseña nueva) y el registro de lo que se hizo.
 // =====================================================================
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../../api.js";
-import { money, timeAgo } from "../../lib/format.js";
-import { useAdmin, ORDER_STATES } from "../state.js";
+import { timeAgo, ESTADOS } from "../../lib/format.js";
+import { useAdmin } from "../state.js";
 import { useModal, useToast, useShowError, Switch, SheetHead } from "../ui.jsx";
-
-const SETTING_NAMES = {
-  combo: "el combo del día", horarios: "los horarios", avisos: "la cinta de avisos",
-  cerrado: "el cartel de cerrado", whatsapp: "el WhatsApp de pedidos", asistente: "el asistente del chat",
-};
 
 const initials = (name) =>
   (name || "?").replace(/[^\p{L}\s]/gu, "").trim().split(/\s+/).map((w) => w[0] || "").join("").slice(0, 2).toUpperCase() || "?";
 
-/** Convierte un registro de actividad en una frase: "Tita marcó Arroz sin stock" */
-function describe(a, products) {
+/** Convierte un registro de actividad en una frase: "Juan marcó Casa en el Centro como Vendida" */
+function describe(a, properties) {
   const d = a.detalle || {};
   const who = <b>{a.usuario || "Alguien"}</b>;
 
-  if (a.tabla === "orders" && d.estado) {
-    return ["🧾", <>{who} pasó el pedido #{a.registro} a <b>{ORDER_STATES[d.estado[1]] || d.estado[1]}</b></>];
-  }
-  if (a.tabla === "giros") {
-    return ["🎟️", <>{who} canjeó {a.registro} de {d.cliente} ({d.premio})</>];
-  }
-  if (a.tabla === "products") {
-    const fromList = products.find((p) => p.id === a.registro)?.nombre;
-    const name = <b>{d._nombre || fromList || (Array.isArray(d.nombre) ? d.nombre[1] : d.nombre) || "un producto"}</b>;
-    if (a.accion === "insert") return ["➕", <>{who} agregó {name}</>];
-    if (a.accion === "delete") return ["🗑️", <>{who} eliminó {name}</>];
-    if (d.precio) return ["💲", <>{who} cambió el precio de {name}: {money(d.precio[0])} → <b>{money(d.precio[1])}</b></>];
-    if (d.en_stock) return [d.en_stock[1] ? "✅" : "⛔", <>{who} marcó {name} {d.en_stock[1] ? "con stock" : "sin stock"}</>];
+  if (a.tabla === "propiedades") {
+    const fromList = properties.find((p) => p.id === a.registro)?.titulo;
+    const name = <b>{d._titulo || d.titulo || fromList || "una publicación"}</b>;
+    if (a.accion === "insert") return ["➕", <>{who} publicó {name}</>];
+    if (a.accion === "delete") return ["🗑️", <>{who} borró {name}</>];
+    if (d.estado) return ["🏷️", <>{who} marcó {name} como <b>{ESTADOS[d.estado[1]] || d.estado[1]}</b></>];
+    if (d.publicada) return [d.publicada[1] ? "👁️" : "🙈", <>{who} {d.publicada[1] ? "mostró" : "ocultó"} {name}</>];
+    if (d.precio) return ["💲", <>{who} cambió el precio de {name}</>];
     return ["✏️", <>{who} editó {name}</>];
   }
-  if (a.tabla === "settings") {
-    const newValue = d.value?.[1];
-    if (a.registro === "ruleta" && newValue) return ["🎡", <>{who} {newValue.activa ? "prendió / actualizó" : "apagó"} la ruleta</>];
-    return ["⚙️", <>{who} cambió {SETTING_NAMES[a.registro] || a.registro}</>];
-  }
+  if (a.tabla === "settings") return ["⚙️", <>{who} cambió los datos de la inmobiliaria</>];
   return ["•", <>{who} hizo un cambio</>];
 }
 
@@ -89,7 +75,7 @@ function UserRow({ user, isMe, onChange }) {
         {isMe ? <span className="role">Dueño</span> : (
           <>
             <select value={user.rol} aria-label={`Rol de ${user.nombre}`} onChange={(e) => onChange(user, { rol: e.target.value }, "Rol actualizado")}>
-              <option value="empleado">Empleado</option>
+              <option value="empleado">Agente</option>
               <option value="dueno">Dueño</option>
             </select>
             <Switch label={user.activo ? "Con acceso" : "Sin acceso"} checked={user.activo}
@@ -103,7 +89,7 @@ function UserRow({ user, isMe, onChange }) {
 }
 
 export function Equipo() {
-  const { me, products } = useAdmin();
+  const { me, properties } = useAdmin();
   const toast = useToast();
   const showError = useShowError();
   const [users, setUsers] = useState(null);
@@ -152,14 +138,14 @@ export function Equipo() {
               <li>Que toque <b>“Crear cuenta”</b> y ponga su nombre, mail y contraseña.</li>
               <li>Le aparece acá arriba en “Esperando”. Prendé <b>“Con acceso”</b> y listo.</li>
             </ol>
-            <p className="small muted" style={{ marginTop: 10 }}><b>Empleado:</b> pedidos, stock y canjear códigos. <b>Dueño:</b> todo.</p>
+            <p className="small muted" style={{ marginTop: 10 }}><b>Agente:</b> sube y edita publicaciones. <b>Dueño:</b> todo (también datos de contacto y equipo).</p>
           </section>
         </div>
 
         <section className="card">
           <h3>Actividad</h3><p className="small muted">Últimos cambios hechos desde el panel</p>
           {activity.length ? activity.map((a) => {
-            const [icon, text] = describe(a, products);
+            const [icon, text] = describe(a, properties);
             return <div className="act" key={a.id}><div className="i">{icon}</div><div>{text}<br /><small>{timeAgo(a.created_at)}</small></div></div>;
           }) : <p className="muted small" style={{ marginTop: 10 }}>Todavía no hay movimientos.</p>}
         </section>

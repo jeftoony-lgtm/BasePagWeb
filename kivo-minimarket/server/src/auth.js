@@ -1,10 +1,10 @@
 // =====================================================================
-//  KIVO · Sesión y permisos
+//  INMOBILIARIA · Sesión y permisos
 //  El panel manda un "token" en cada pedido (Authorization: Bearer ...).
 //  Acá se averigua quién es y se decide qué puede hacer:
-//    - visitante: ve el catálogo, hace pedidos, gira la ruleta
-//    - empleado activo: pedidos, stock y canjes
-//    - dueño activo: todo
+//    - visitante: ve las publicaciones
+//    - empleado activo: sube, edita y borra publicaciones
+//    - dueño activo: todo (además, datos de la inmobiliaria y equipo)
 //  Los permisos se chequean en el servidor: tocar la página no sirve para saltarlos.
 // =====================================================================
 

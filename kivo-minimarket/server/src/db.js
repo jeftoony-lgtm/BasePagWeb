@@ -1,5 +1,5 @@
 // =====================================================================
-//  KIVO · Conexión con MongoDB (la dirección está en server/.env)
+//  INMOBILIARIA · Conexión con MongoDB (la dirección está en server/.env)
 // =====================================================================
 
 import mongoose from "mongoose";

@@ -1,49 +1,39 @@
 // =====================================================================
-//  KIVO PANEL · Arranque y menú
+//  INMOBILIARIA PANEL · Arranque y menú
 //  1. Si no hay nadie adentro → pantalla de entrar.
 //  2. Si la cuenta no está activada → pantalla de espera.
-//  3. Si está todo bien → carga los datos y muestra la sección pedida (#pedidos, #productos...).
+//  3. Si está todo bien → carga los datos y muestra la sección pedida (#publicaciones...).
 // =====================================================================
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api.js";
-import { money } from "../lib/format.js";
 import { AdminContext, allowedSections } from "./state.js";
-import { ModalProvider, useToast, beep } from "./ui.jsx";
-import { AuthScreen, PendingScreen } from "./Auth.jsx";
+import { ModalProvider } from "./ui.jsx";
+import { AuthScreen, PendingScreen, Logo } from "./Auth.jsx";
 
-import { Resumen } from "./views/Resumen.jsx";
-import { Pedidos } from "./views/Pedidos.jsx";
-import { Productos } from "./views/Productos.jsx";
-import { Canjear } from "./views/Canjear.jsx";
-import { Promos } from "./views/Promos.jsx";
-import { Clientes } from "./views/Clientes.jsx";
+import { Publicaciones } from "./views/Publicaciones.jsx";
+import { Graficas } from "./views/Graficas.jsx";
+import { Inmobiliaria } from "./views/Inmobiliaria.jsx";
 import { Equipo } from "./views/Equipo.jsx";
 
 const VIEWS = {
-  resumen: Resumen,
-  pedidos: Pedidos,
-  productos: Productos,
-  canjear: Canjear,
-  promos: Promos,
-  clientes: Clientes,
+  publicaciones: Publicaciones,
+  graficas: Graficas,
+  inmobiliaria: Inmobiliaria,
   equipo: Equipo,
 };
 
-const EMPTY = { products: [], categories: [], settings: {}, orders: [] };
-const Logo = () => <div className="logo"><svg><use href="#cart" /></svg><b>KIV<i>O</i></b></div>;
+const EMPTY = { properties: [], settings: {} };
 
-function Nav({ sections, current, newOrders }) {
+function Nav({ sections, current }) {
   return sections.map((s) => (
     <a key={s.id} href={`#${s.id}`} className={current === s.id ? "on" : ""}>
       <span>{s.icon}</span>{s.name}
-      {s.id === "pedidos" && newOrders > 0 && <span className="count">{newOrders}</span>}
     </a>
   ));
 }
 
 export function AdminApp() {
-  const toast = useToast();
   const [me, setMe] = useState(undefined); // undefined = cargando, null = nadie adentro
   const [data, setData] = useState(EMPTY);
   const [hash, setHash] = useState(() => location.hash.slice(1));
@@ -57,8 +47,8 @@ export function AdminApp() {
     }
     if (user?.activo) {
       try {
-        const [categories, products, settings, orders] = await Promise.all([api.categories(), api.products(), api.settings(), api.orders(30)]);
-        setData({ categories, products, settings, orders });
+        const [properties, settings] = await Promise.all([api.properties(), api.settings()]);
+        setData({ properties, settings });
       } catch (error) {
         console.error(error);
       }
@@ -74,29 +64,11 @@ export function AdminApp() {
     return () => removeEventListener("hashchange", onHash);
   }, []);
 
-  // Pedidos en vivo (con sonido cuando entra uno nuevo)
-  const active = Boolean(me?.activo);
-  useEffect(() => {
-    if (!active) return;
-    return api.onOrders((type, order) => {
-      setData((d) => {
-        const exists = d.orders.some((o) => o.id === order.id);
-        return { ...d, orders: exists ? d.orders.map((o) => (o.id === order.id ? order : o)) : [order, ...d.orders] };
-      });
-      if (type === "INSERT") {
-        beep();
-        toast(`🛒 Nuevo pedido de ${order.nombre} · ${money(order.total)}`);
-        navigator.vibrate?.([120, 60, 120]);
-      }
-    });
-  }, [active, toast]);
-
   const isOwner = me?.activo && me.rol === "dueno";
   const sections = allowedSections(isOwner);
-  const view = sections.some((s) => s.id === hash) ? hash : "pedidos"; // si no tiene permiso, va a Pedidos
-  const newOrders = data.orders.filter((o) => o.estado === "nuevo").length;
+  const view = sections.some((s) => s.id === hash) ? hash : "publicaciones"; // si no tiene permiso, va a Publicaciones
 
-  useEffect(() => { document.title = (newOrders ? `(${newOrders}) ` : "") + "Panel · Kivo"; }, [newOrders]);
+  useEffect(() => { document.title = "Panel · Inmobiliaria"; }, []);
   useEffect(() => { document.querySelector(".mobile-bar .tabs a.on")?.scrollIntoView({ inline: "center", block: "nearest" }); }, [view, me]);
 
   const logout = useCallback(() => {
@@ -112,9 +84,8 @@ export function AdminApp() {
     const setter = (key) => (next) => setData((d) => ({ ...d, [key]: typeof next === "function" ? next(d[key]) : next }));
     return {
       me, isOwner, ...data,
-      setProducts: setter("products"),
+      setProperties: setter("properties"),
       setSettings: setter("settings"),
-      setOrders: setter("orders"),
     };
   }, [me, isOwner, data]);
 
@@ -122,7 +93,7 @@ export function AdminApp() {
   if (!me) return <AuthScreen onLoggedIn={boot} />;
   if (!me.activo) return <PendingScreen onLogout={logout} />;
 
-  const View = VIEWS[view];
+  const View = VIEWS[view] || Publicaciones; // por las dudas: nunca dejar la pantalla en blanco
 
   return (
     <AdminContext.Provider value={context}>
@@ -131,8 +102,8 @@ export function AdminApp() {
           {/* Menú lateral (compu) */}
           <aside className="side">
             <Logo />
-            <div className="who"><b>{me.nombre}</b><span className={`role${isOwner ? "" : " emp"}`}>{isOwner ? "Dueño" : "Empleado"}</span></div>
-            <nav className="nav"><Nav sections={sections} current={view} newOrders={newOrders} /></nav>
+            <div className="who"><b>{me.nombre}</b><span className={`role${isOwner ? "" : " emp"}`}>{isOwner ? "Dueño" : "Agente"}</span></div>
+            <nav className="nav"><Nav sections={sections} current={view} /></nav>
             <div className="bottom">
               <a href="/" target="_blank" rel="noopener">↗ Ver la página</a>
               <button onClick={logout}>Salir</button>
@@ -146,7 +117,7 @@ export function AdminApp() {
                 <Logo />
                 <div className="me"><b>{me.nombre}</b><br /><button className="small" onClick={logout} style={{ textDecoration: "underline", opacity: 0.85 }}>Salir</button></div>
               </div>
-              <nav className="tabs"><Nav sections={sections} current={view} newOrders={newOrders} /></nav>
+              <nav className="tabs"><Nav sections={sections} current={view} /></nav>
             </div>
 
             <main>

@@ -1,5 +1,5 @@
 // =====================================================================
-//  KIVO · Equipo (solo dueño)
+//  INMOBILIARIA · Equipo (solo dueño)
 //  Activar o quitar acceso, cambiar rol, poner contraseña nueva,
 //  y ver el registro de actividad.
 // =====================================================================

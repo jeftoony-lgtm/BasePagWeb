@@ -1,12 +1,12 @@
-# Kivo Mini Market · Página web + Panel del local + Asistente
+# Inmobiliaria · Página de propiedades + Panel de publicaciones
 
-Página del minimarket Kivo (Solymar, Uruguay): entrada animada, góndolas, canasta con
-pedido por WhatsApp, ruleta de promos, asistente con IA y un panel para que el dueño
-y el personal manejen todo desde el celular.
+Página de la inmobiliaria (JTC Ventas y Alquileres): propiedades en venta y en alquiler con
+fotos, precio y contacto por WhatsApp, y un panel con login para subir y editar las
+publicaciones desde el celular.
 
 - **Página y panel:** [React](https://react.dev) armado con [Vite](https://vite.dev).
 - **Servidor:** [Express](https://expressjs.com) (Node.js).
-- **Base de datos:** [MongoDB](https://www.mongodb.com) (productos, pedidos, fotos, cuentas, todo).
+- **Base de datos:** [MongoDB](https://www.mongodb.com) (publicaciones, fotos, cuentas, todo).
 
 ---
 
@@ -18,58 +18,50 @@ kivo-minimarket/
 │
 ├── client/                      La página y el panel (React + Vite)
 │   ├── index.html               Página pública
-│   ├── admin.html               Panel del local
+│   ├── admin.html               Panel (login + publicaciones)
 │   ├── public/img/favicon.svg
 │   └── src/
 │       ├── api.js               ← Todo lo que se lee o guarda en el servidor pasa por acá
-│       ├── styles/              base.css (compartido), site.css (página), admin.css (panel)
-│       ├── lib/                 format.js (precios, fechas) y schedule.js (horarios)
-│       ├── site/                Página pública, una parte por archivo
-│       │   ├── App.jsx          Arranque: carga los datos y arma la página
-│       │   ├── store.jsx        Productos y ajustes cargados
-│       │   ├── cart.jsx         La canasta (agregar, sacar, animación)
-│       │   ├── Topbar.jsx  Hero.jsx  hero-motion.js  hero-scene.svg   Entrada animada
-│       │   ├── Catalog.jsx      Cinta de avisos, combo y góndolas
-│       │   ├── Sections.jsx     Encargos, horarios, mapa y pie
-│       │   ├── CartDrawer.jsx   Canasta y pedido por WhatsApp
-│       │   ├── Ruleta.jsx       Ruleta de promos
-│       │   └── Assistant.jsx    Chat del asistente
+│       ├── styles/              base.css (compartido), card.css (tarjeta de propiedad),
+│       │                        site.css (página), admin.css (panel)
+│       ├── lib/format.js        Precios, etiquetas (En venta, Vendida...), WhatsApp, fechas
+│       ├── site/                Página pública
+│       │   ├── App.jsx          Arranque: encabezado, portada, filtros, grilla, servicios, contacto
+│       │   ├── Card.jsx         Tarjeta de una propiedad (estilo post de Instagram)
+│       │   └── Detail.jsx       Ficha con galería de fotos y botón de WhatsApp
 │       └── admin/               Panel
-│           ├── App.jsx          Arranque, menú y pedidos en vivo
+│           ├── App.jsx          Arranque y menú
 │           ├── Auth.jsx         Entrar / crear cuenta
 │           ├── state.js         Datos cargados y secciones del menú (y quién ve cada una)
-│           ├── ui.jsx           Avisos, ventanas, interruptores, sonido
+│           ├── photo.js         Achica las fotos antes de subirlas
+│           ├── ui.jsx           Avisos, ventanas, interruptores
 │           └── views/           Una sección por archivo
-│               ├── Resumen  Pedidos  Productos  Canjear
-│               └── Promos   Clientes  Equipo
+│               ├── Publicaciones   Subir, editar, marcar vendida, ocultar, borrar
+│               ├── Graficas        Números y gráfico de barras (solo dueño)
+│               ├── Inmobiliaria    Nombre, frase, WhatsApp, Instagram, servicios
+│               └── Equipo          Cuentas y registro de actividad
 │
 └── server/                      El servidor (Express + MongoDB)
     ├── .env.example             ← Copialo como .env y completalo
     ├── scripts/
-    │   ├── seed.js              Carga productos y ajustes iniciales
+    │   ├── seed.js              Carga los datos de la inmobiliaria y publicaciones de ejemplo
     │   └── hacer-dueno.js       Hacer dueño a una cuenta / cambiarle la contraseña
     └── src/
         ├── index.js             Arranque del servidor
         ├── models.js            Qué guarda la base de datos (y con qué campos)
-        ├── seed-data.js         Productos, categorías y ajustes de ejemplo
-        ├── auth.js              Sesión y permisos (visitante / empleado / dueño)
+        ├── seed-data.js         Datos de la inmobiliaria y publicaciones de ejemplo
+        ├── auth.js              Sesión y permisos (visitante / agente / dueño)
         ├── activity.js          Registro de quién hizo qué
-        ├── live.js              Pedidos en vivo para el panel
         ├── http.js              Errores, límites de uso, fechas
-        ├── routes/              Una parte de la API por archivo
-        │   ├── auth.js  catalog.js  settings.js  orders.js  ruleta.js  team.js
-        └── assistant/           El asistente
-            ├── route.js         Habla con la IA (Claude)
-            ├── prompt.js        Personalidad y datos del local
-            ├── tools.js         Lo que la IA puede hacer con la canasta
-            └── practice.js      Asistente de práctica (sin IA)
+        └── routes/              Una parte de la API por archivo
+            ├── auth.js  propiedades.js  settings.js  team.js
 ```
 
 **Reglas para que el código siga prolijo:**
 - Estilos en `client/src/styles/`. Cada componente de React o archivo hace una sola cosa y empieza con un comentario que dice qué hace.
 - La página y el panel nunca hablan con MongoDB directo: siempre a través de `client/src/api.js` → servidor.
 - Los permisos se chequean en el servidor (`server/src/auth.js`), nunca solo en la página.
-- Nombres en castellano para lo del negocio (`pedidos`, `precio`) y en inglés para lo técnico (`render`, `init`).
+- Nombres en castellano para lo del negocio (`propiedades`, `precio`) y en inglés para lo técnico (`render`, `init`).
 - Sangría de 2 espacios.
 
 ---
@@ -84,7 +76,7 @@ kivo-minimarket/
      *Network Access*: agregar tu IP (o `0.0.0.0/0` para que el hosting pueda entrar) →
      *Connect → Drivers*: copiar la dirección `mongodb+srv://...`.
    - **En tu compu:** instalá [MongoDB Community](https://www.mongodb.com/try/download/community).
-     La dirección es `mongodb://127.0.0.1:27017/kivo`.
+     La dirección es `mongodb://127.0.0.1:27017/inmobiliaria`.
 
 ---
 
@@ -101,7 +93,7 @@ Abrí `server/.env` y completá `MONGODB_URI` (la dirección de MongoDB) y `JWT_
 (cualquier texto largo y al azar). Después:
 
 ```bash
-npm run seed                     # carga productos, categorías y ajustes iniciales
+npm run seed                     # carga los datos de la inmobiliaria y 4 publicaciones de ejemplo
 npm run dev                      # prende el servidor y la página
 ```
 
@@ -112,32 +104,28 @@ Lo que cambies se actualiza solo en el navegador mientras programás.
 como dueño, ya activa. Todas las que vengan después quedan esperando a que el dueño las active.
 
 **¿Querés probar con datos de ejemplo?** `npm run seed:demo` **borra toda la base** y carga
-pedidos, clientes y dos cuentas: `dueno@kivo.uy` y `tita@kivo.uy` (contraseña `demo123`).
+las publicaciones de ejemplo y dos cuentas: `dueno@demo.uy` y `agente@demo.uy` (contraseña `demo123`).
 Solo para tu compu, nunca en el sitio real.
 
 ---
 
-## Asistente con IA
+## Subir una publicación
 
-El chat entiende lo que la gente escribe ("algo para una picada de 6", "2 cocas grandes"),
-arma la canasta y la manda a enviar por WhatsApp. Usa **Claude Haiku 5.5** de Anthropic,
-el modelo más económico: cada mensaje cuesta una fracción de centavo de dólar.
+1. Entrá al panel (`/admin.html`) con tu mail y contraseña.
+2. **Publicaciones → ＋ Nueva publicación.**
+3. Agregá las fotos (hasta 20; la primera es la portada, con ★ elegís otra), el título,
+   si es **venta o alquiler**, barrio, precio y características (una por renglón).
+4. **Publicar.** Aparece en la página al instante.
 
-La IA corre en el servidor (`server/src/assistant/`), no en la página, para que la clave quede escondida.
+Para editarla tocá **Editar**. Desde la lista también podés cambiar el estado
+(Disponible / Reservada / **Vendida** / **Alquilada**: le pone el cartel en la foto) u ocultarla.
+Si apagás "Publicada" queda como borrador y solo se ve en el panel.
 
-1. **Clave de Anthropic:** creá una cuenta en console.anthropic.com, cargá saldo y creá una
-   API key. Recomendado: poné un **límite de gasto mensual** en la consola.
-2. Pegala en `server/.env` → `ANTHROPIC_API_KEY=sk-ant-...` y reiniciá el servidor.
+El nombre, la frase, el WhatsApp, el Instagram y la lista de servicios se cambian en
+**Datos y contacto** (solo el dueño).
 
-Sin clave, el chat funciona igual con un **asistente de práctica** (reglas simples, sin IA).
-
-**Control desde el panel** (Promos y local → Asistente del chat): prenderlo o apagarlo,
-cambiarle el nombre y escribirle lo que tiene que saber (envíos, pagos, novedades).
-Siempre conoce los productos, precios, stock, horarios y el combo del día.
-
-**Protección del gasto** (se ajusta en `LIMITS`, arriba de `server/src/assistant/route.js`):
-60 mensajes por persona por día y 2.000 por día en total. La IA nunca inventa productos ni
-precios: solo puede sumar lo que está en el catálogo y con stock.
+Cada propiedad tiene su link para compartir: `tu-pagina.com/#propiedad/<id>`
+(es el que va en el mensaje de WhatsApp que manda la gente).
 
 ---
 
@@ -150,10 +138,10 @@ páginas estáticas). Sirven Render, Railway, Fly.io o un VPS. En el hosting:
 |---|---|
 | Comando de instalación / build | `npm install && npm run build` |
 | Comando de arranque | `npm start` |
-| Variables de entorno | `MONGODB_URI`, `JWT_SECRET`, `ANTHROPIC_API_KEY` (las mismas del `.env`) |
+| Variables de entorno | `MONGODB_URI`, `JWT_SECRET` (las mismas del `.env`) |
 
 El servidor sirve la página y el panel ya compilados (`client/dist`) y la API en `/api`,
-todo desde la misma dirección. Las fotos de los productos se guardan dentro de MongoDB,
+todo desde la misma dirección. Las fotos de las propiedades se guardan dentro de MongoDB,
 así que no se pierden aunque el hosting se reinicie.
 
 El `.env` **nunca** se sube a GitHub (ya está en `.gitignore`): las claves se cargan en el panel del hosting.
@@ -174,26 +162,24 @@ GitHub Desktop); al terminar, subí con un mensaje claro ("Cambio el precio del 
 
 ## Contraseñas olvidadas
 
-- **Empleado:** el dueño entra a **Equipo** → 🔒 **Contraseña** y le pone una nueva.
+- **Agente:** el dueño entra a **Equipo** → 🔒 **Contraseña** y le pone una nueva.
 - **Dueño:** desde la terminal, en la carpeta del proyecto:
   ```bash
   npm run hacer-dueno -w server -- mail@del-dueno.com contraseñaNueva
   ```
-  (Sin la contraseña, solo convierte esa cuenta en dueño: sirve para pasarle el local a otra persona.)
+  (Sin la contraseña, solo convierte esa cuenta en dueño: sirve para pasarle el panel a otra persona.)
 
 ---
 
 ## Quién puede hacer qué
 
-| | Dueño | Empleado |
+| | Dueño | Agente |
 |---|:-:|:-:|
-| Ver y mover pedidos | ✅ | ✅ |
-| Marcar sin stock | ✅ | ✅ |
-| Canjear códigos de la ruleta | ✅ | ✅ |
-| Precios, fotos, productos nuevos | ✅ | ❌ |
-| Ruleta, combo, asistente, horarios, avisos, cerrado hoy | ✅ | ❌ |
-| Lista de clientes, resumen, actividad | ✅ | ❌ |
-| Activar o quitar usuarios, cambiar contraseñas | ✅ | ❌ |
+| Subir, editar y borrar publicaciones | ✅ | ✅ |
+| Marcar vendida / alquilada, ocultar | ✅ | ✅ |
+| Gráficas | ✅ | ❌ |
+| Nombre, WhatsApp, Instagram, servicios | ✅ | ❌ |
+| Activar o quitar usuarios, cambiar contraseñas, ver actividad | ✅ | ❌ |
 
 Los permisos los aplica el servidor (`server/src/auth.js`), no la página:
 aunque alguien toque el código del navegador, no puede saltárselos.

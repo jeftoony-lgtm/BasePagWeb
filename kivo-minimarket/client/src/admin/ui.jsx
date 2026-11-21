@@ -1,7 +1,7 @@
 // =====================================================================
-//  KIVO PANEL · Piezas de interfaz que usan todas las secciones
+//  INMOBILIARIA PANEL · Piezas de interfaz que usan todas las secciones
 //  Avisos (toast), ventana emergente (modal), interruptor, botón de
-//  guardar y el sonido de "pedido nuevo".
+//  guardar.
 // =====================================================================
 
 import { createContext, Fragment, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -41,22 +41,29 @@ export function useShowError() {
 const ModalContext = createContext(null);
 export const useModal = () => useContext(ModalContext);
 
-function ConfirmDialog({ title, text, confirmLabel, onAnswer }) {
+/** Cartel "¿Estás seguro?" en el medio de la pantalla. Va en su propia capa, encima de
+ *  cualquier ventana abierta: preguntar no cierra el formulario ni borra lo escrito. */
+function ConfirmDialog({ title, text, confirmLabel, danger, onAnswer }) {
   return (
-    <>
-      <div className="sheet-head"><h3>{title}</h3></div>
-      <p className="muted">{text}</p>
-      <div className="row" style={{ justifyContent: "flex-end", marginTop: 18 }}>
-        <button className="btn btn-ghost" onClick={() => onAnswer(false)}>Volver</button>
-        <button className="btn" style={{ background: "var(--red)", color: "#fff" }} onClick={() => onAnswer(true)}>{confirmLabel}</button>
+    <div className="confirm-layer" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle"
+      onClick={(e) => e.target === e.currentTarget && onAnswer(false)}>
+      <div className="confirm-box">
+        <div className={`confirm-icon${danger ? " danger" : ""}`} aria-hidden="true">{danger ? "!" : "?"}</div>
+        <h3 id="confirmTitle">{title}</h3>
+        {text && <p className="muted">{text}</p>}
+        <div className="confirm-actions">
+          <button type="button" className="btn btn-ghost" onClick={() => onAnswer(false)}>Volver</button>
+          <button type="button" className={`btn ${danger ? "btn-danger" : "btn-green"}`} autoFocus onClick={() => onAnswer(true)}>{confirmLabel}</button>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
 
 export function ModalProvider({ children }) {
   const [content, setContent] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [question, setQuestion] = useState(null); // el "¿Estás seguro?" abierto (o null)
   const opened = useRef(0);
 
   // Cada apertura es una ventana nueva (key distinta): no se arrastra lo escrito en la anterior
@@ -67,17 +74,25 @@ export function ModalProvider({ children }) {
   }, []);
   const close = useCallback(() => setIsOpen(false), []);
 
-  /** Pregunta "¿Seguro?" y devuelve true o false */
-  const confirm = useCallback((title, text, confirmLabel) => new Promise((resolve) => {
-    const answer = (yes) => { setIsOpen(false); resolve(yes); };
-    open(<ConfirmDialog title={title} text={text} confirmLabel={confirmLabel} onAnswer={answer} />);
-  }), [open]);
+  /** Pregunta "¿Seguro?" en el medio de la pantalla y devuelve true o false.
+   *  danger = botón rojo (para borrar); con false queda verde (para guardar) */
+  const confirm = useCallback((title, text, confirmLabel, danger = true) => new Promise((resolve) => {
+    setQuestion({
+      title, text, confirmLabel, danger,
+      answer: (yes) => { setQuestion(null); resolve(yes); },
+    });
+  }), []);
 
+  // Escape: si hay una pregunta abierta, la cancela; si no, cierra la ventana
   useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && close();
+    const onKey = (e) => {
+      if (e.key !== "Escape") return;
+      if (question) question.answer(false);
+      else close();
+    };
     addEventListener("keydown", onKey);
     return () => removeEventListener("keydown", onKey);
-  }, [close]);
+  }, [close, question]);
 
   const value = useMemo(() => ({ open, close, confirm, isOpen }), [open, close, confirm, isOpen]);
 
@@ -87,6 +102,7 @@ export function ModalProvider({ children }) {
       <div className={`modal${isOpen ? " open" : ""}`} id="modal" onClick={(e) => e.target === e.currentTarget && close()}>
         <div className="sheet" id="sheet">{content}</div>
       </div>
+      {question && <ConfirmDialog {...question} onAnswer={question.answer} />}
     </ModalContext.Provider>
   );
 }
@@ -107,12 +123,16 @@ export function Switch({ label = "", checked, onChange, ...rest }) {
   );
 }
 
-/** Botón "Guardar" con el cartelito "Guardado ✓". onSave devuelve true si se guardó */
-export function SaveBar({ label, onSave }) {
+/** Botón "Guardar" con el cartelito "Guardado ✓". onSave devuelve true si se guardó.
+ *  Antes de guardar pregunta "¿Estás seguro?" en el medio de la pantalla (confirmText = la aclaración).
+ *  dirty = hay algo cambiado (si no, el botón queda apagado). children = lo que va a la izquierda. */
+export function SaveBar({ label, onSave, dirty = true, disabled = false, confirmText = "Se van a guardar los cambios.", confirmLabel = "Sí, guardar", children }) {
+  const { confirm } = useModal();
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
 
   async function onClick() {
+    if (!(await confirm("¿Estás seguro?", confirmText, confirmLabel, false))) return;
     setBusy(true);
     const ok = await onSave();
     setBusy(false);
@@ -123,28 +143,11 @@ export function SaveBar({ label, onSave }) {
 
   return (
     <div className="savebar">
-      <span className={`saved${saved ? " show" : ""}`}>Guardado ✓</span>
-      <button className="btn btn-green" disabled={busy} onClick={onClick}>{label}</button>
+      {children}
+      {saved ? <span className="saved show">Guardado ✓</span> : dirty && <span className="unsaved">● Cambios sin guardar</span>}
+      <button type="button" className="btn btn-green" disabled={busy || disabled || !dirty} onClick={onClick}>
+        {busy ? "Guardando…" : label}
+      </button>
     </div>
   );
-}
-
-/* ---------- Sonido de "pedido nuevo" (tres notitas) ---------- */
-export function beep() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    [880, 1175, 1568].forEach((frequency, i) => {
-      const start = ctx.currentTime + i * 0.18;
-      const oscillator = ctx.createOscillator();
-      const gain = ctx.createGain();
-      oscillator.frequency.value = frequency;
-      oscillator.connect(gain);
-      gain.connect(ctx.destination);
-      gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(0.25, start + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.16);
-      oscillator.start(start);
-      oscillator.stop(start + 0.18);
-    });
-  } catch { /* algunos navegadores no dejan sonar sin tocar la pantalla antes */ }
 }

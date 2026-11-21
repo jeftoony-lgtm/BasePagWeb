@@ -1,10 +1,11 @@
 // =====================================================================
-//  KIVO · Arranque de la página pública
+//  INMOBILIARIA · Arranque de la página pública
 // =====================================================================
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "../styles/base.css";
+import "../styles/card.css";
 import "../styles/site.css";
 import { App } from "./App.jsx";
 

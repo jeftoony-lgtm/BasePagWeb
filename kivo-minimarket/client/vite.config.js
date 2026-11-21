@@ -1,6 +1,6 @@
 // =====================================================================
-//  KIVO · Configuración de Vite
-//  - Dos páginas: index.html (la tienda) y admin.html (el panel).
+//  INMOBILIARIA · Configuración de Vite
+//  - Dos páginas: index.html (las publicaciones) y admin.html (el panel).
 //  - En desarrollo, todo lo que va a /api se pasa al servidor (puerto 3001).
 // =====================================================================
 
