@@ -3,7 +3,7 @@
 //
 //    npm run seed        → ajustes y publicaciones de ejemplo (solo si no hay publicaciones)
 //    npm run seed:demo   → BORRA TODO y carga lo mismo más dos cuentas
-//                          (dueno@demo.uy y agente@demo.uy, contraseña "demo123").
+//                          (dueno@jtc.uy y empleado@jtc.uy, contraseña "prueba123").
 //                          Solo para probar en tu compu, nunca en el sitio real.
 // =====================================================================
 
@@ -30,12 +30,12 @@ if (demo) {
   await mongoose.connection.dropDatabase();
   await Promise.all(mongoose.modelNames().map((name) => mongoose.model(name).syncIndexes()));
   await loadExamples();
-  const password_hash = await bcrypt.hash("demo123", 10);
+  const password_hash = await bcrypt.hash("prueba123", 10);
   await User.insertMany([
-    { email: "dueno@demo.uy", nombre: "Dueño (demo)", rol: "dueno", activo: true, password_hash },
-    { email: "agente@demo.uy", nombre: "Agente", rol: "empleado", activo: true, password_hash },
+    { email: "dueno@jtc.uy", nombre: "Dueño (prueba)", rol: "dueno", activo: true, password_hash },
+    { email: "empleado@jtc.uy", nombre: "Empleado (prueba)", rol: "empleado", activo: true, password_hash },
   ]);
-  console.log("✓ Listo. Entrá al panel con dueno@demo.uy o agente@demo.uy (contraseña: demo123).");
+  console.log("✓ Listo. Entrá al panel con dueno@jtc.uy o empleado@jtc.uy (contraseña: prueba123).");
 } else if (await Property.estimatedDocumentCount()) {
   console.log("La base ya tiene publicaciones: no se cargó nada (para no pisar lo que hay).");
 } else {

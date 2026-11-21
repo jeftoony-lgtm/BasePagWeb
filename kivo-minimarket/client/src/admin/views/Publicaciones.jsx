@@ -7,7 +7,7 @@
 
 import { useRef, useState } from "react";
 import { api } from "../../api.js";
-import { normalize, price, OPERACIONES, ESTADOS, TIPOS, estadosDe, ajustarEstado, cerrada } from "../../lib/format.js";
+import { normalize, price, OPERACIONES, ESTADOS, TIPOS, estadosDe, ajustarEstado, cerrada, mapEmbed } from "../../lib/format.js";
 import { useAdmin } from "../state.js";
 import { useModal, useToast, useShowError, Switch, SheetHead, SaveBar } from "../ui.jsx";
 import { preparePhoto } from "../photo.js";
@@ -20,11 +20,60 @@ const EMPTY = {
   barrio: "", direccion: "", moneda: "USD", precio: "", precio_extra: "",
   dormitorios: "", banos: "", metros: "",
   caracteristicas: [], descripcion: "", fotos: [], publicada: true, destacada: false,
+  ubicacion: null, ubicacion_aproximada: false,
 };
 
 // Se recuerdan al cambiar de sección
 let lastFilter = "todas";
 let lastSearch = "";
+
+/* =================== Ubicación en el mapa =================== */
+// Se pega el link de Google Maps; el servidor saca las coordenadas y se ve el mapa antes de guardar
+function LocationField({ value, approx, onChange, onApprox }) {
+  const [link, setLink] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function find(text = link) {
+    if (!text.trim()) return;
+    setBusy(true);
+    setError("");
+    try {
+      onChange(await api.locate(text));
+      setLink("");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="field location">
+      <label htmlFor="pMap">Ubicación en el mapa (opcional)</label>
+      <div className="location-row">
+        <input id="pMap" placeholder="Pegá el link de Google Maps (o escribí la dirección)" value={link}
+          onChange={(e) => setLink(e.target.value)}
+          onPaste={(e) => { const text = e.clipboardData.getData("text"); if (/^https?:\/\//.test(text.trim())) { e.preventDefault(); setLink(text); find(text); } }}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); find(); } }} />
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => find()} disabled={busy || !link.trim()}>{busy ? "Buscando…" : "Buscar"}</button>
+      </div>
+      {error && <span className="error-text">{error}</span>}
+      {!value && !error && <span className="small muted">En Google Maps: tocá el lugar → <b>Compartir</b> → <b>Copiar link</b>, y pegalo acá.</span>}
+      {value && (
+        <>
+          <div className="location-preview">
+            <iframe title="Ubicación" src={mapEmbed(value, approx)} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+          </div>
+          <div className="row" style={{ justifyContent: "space-between", gap: 12 }}>
+            <Switch label="Mostrar solo la zona (no la casa exacta)" checked={approx} onChange={onApprox} />
+            <button type="button" className="link-btn" onClick={() => onChange(null)}>Quitar ubicación</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 /* =================== Fotos de la publicación =================== */
 
@@ -183,6 +232,9 @@ function PropertyForm({ original }) {
           <div className="field"><label htmlFor="pBarrio">Barrio / zona</label><input id="pBarrio" placeholder="Ej: Barrio Olimar" {...field("barrio")} /></div>
           <div className="field"><label htmlFor="pAddress">Dirección (opcional)</label><input id="pAddress" placeholder="Ej: Calle 3 entre 14 y 16" {...field("direccion")} /></div>
         </div>
+
+        <LocationField value={p.ubicacion} approx={p.ubicacion_aproximada}
+          onChange={(ubicacion) => set({ ubicacion })} onApprox={(ubicacion_aproximada) => set({ ubicacion_aproximada })} />
 
         <div className="price-row">
           <div className="field"><label htmlFor="pCurrency">Moneda</label>

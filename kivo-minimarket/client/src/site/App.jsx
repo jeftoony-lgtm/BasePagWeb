@@ -67,14 +67,25 @@ function Services({ info }) {
   );
 }
 
+/* Íconos del pie: dibujados con el color del texto (los emojis cambian según el celular) */
+const PhoneIcon = () => (
+  <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z" fill="currentColor" />
+  </svg>
+);
+const InstagramIcon = () => (
+  <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+  </svg>
+);
+
 function Footer({ info }) {
   return (
     <footer className="footer" id="contacto">
       <Brand info={info} />
       <div className="footer-links">
-        {info.whatsapp && <a href={whatsappLink(info.whatsapp)} target="_blank" rel="noopener">📲 WhatsApp {prettyWhatsapp(info.whatsapp)}</a>}
-        {info.telefono2 && <a href={`tel:${info.telefono2}`}>📞 {info.telefono2}</a>}
-        {info.instagram && <a href={`https://instagram.com/${info.instagram}`} target="_blank" rel="noopener">📷 @{info.instagram}</a>}
+        {info.whatsapp && <a href={whatsappLink(info.whatsapp)} target="_blank" rel="noopener"><PhoneIcon /> {prettyWhatsapp(info.whatsapp)}</a>}
+        {info.instagram && <a href={`https://instagram.com/${info.instagram}`} target="_blank" rel="noopener"><InstagramIcon /> @{info.instagram}</a>}
       </div>
       <small>
         © {new Date().getFullYear()} {info.nombre} {info.subtitulo}

@@ -54,6 +54,8 @@ const propertySchema = new Schema({
   metros: { type: Number, default: null, min: 0 },                         // m² edificados
   caracteristicas: { type: [String], default: [] },                        // ["Piscina", "Garaje para dos autos"]
   descripcion: { type: String, default: "", trim: true, maxlength: 4000 },
+  ubicacion: { type: Schema.Types.Mixed, default: null },                  // { lat, lng } o { texto } (ver maps.js)
+  ubicacion_aproximada: { type: Boolean, default: false },                 // en la página se ve la zona, no el punto exacto
   fotos: { type: [String], default: [] },                                  // la primera es la portada
   publicada: { type: Boolean, default: true },  // false = borrador, no se ve en la página
   destacada: { type: Boolean, default: false }, // aparece primero (como los posts fijados)

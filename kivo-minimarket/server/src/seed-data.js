@@ -12,7 +12,6 @@ export const DEFAULT_SETTINGS = {
     eslogan: "Donde los sueños encuentran su lugar.",
     descripcion: "Compra, venta y asesoría en inversiones inmobiliarias.",
     whatsapp: "59899787834",   // con código de país, sin + ni espacios
-    telefono2: "098899999",
     instagram: "jtcventasyalquileres",
     servicios: [
       "Rapidez",

@@ -10,6 +10,7 @@ import { Property, Photo, OPERACIONES, ESTADOS, TIPOS } from "../models.js";
 import { isStaff, requireStaff } from "../auth.js";
 import { fail } from "../http.js";
 import { logActivity, changes } from "../activity.js";
+import { resolveLocation, cleanLocation, approximate } from "../maps.js";
 
 export const router = Router();
 
@@ -50,6 +51,8 @@ function propertyFields(body) {
   if ("moneda" in body) fields.moneda = body.moneda === "UYU" ? "UYU" : "USD";
   if ("publicada" in body) fields.publicada = Boolean(body.publicada);
   if ("destacada" in body) fields.destacada = Boolean(body.destacada);
+  if ("ubicacion" in body) fields.ubicacion = cleanLocation(body.ubicacion);
+  if ("ubicacion_aproximada" in body) fields.ubicacion_aproximada = Boolean(body.ubicacion_aproximada);
   if ("caracteristicas" in body) {
     const list = Array.isArray(body.caracteristicas) ? body.caracteristicas : [];
     fields.caracteristicas = list.map((c) => String(c).trim().slice(0, 80)).filter(Boolean).slice(0, 30);
@@ -68,16 +71,32 @@ async function findProperty(id) {
   return property;
 }
 
+/** Lo que ve el público: si la ubicación es aproximada, nunca sale el punto exacto */
+function forPublic(property) {
+  const p = property.toJSON();
+  if (p.ubicacion_aproximada && p.ubicacion?.lat != null) p.ubicacion = approximate(p.ubicacion);
+  return p;
+}
+
 /* ---------- Propiedades ---------- */
 router.get("/propiedades", async (req, res) => {
-  const filter = isStaff(req) ? {} : { publicada: true };
-  res.json(await Property.find(filter).sort({ destacada: -1, created_at: -1 }));
+  const staff = isStaff(req);
+  const list = await Property.find(staff ? {} : { publicada: true }).sort({ destacada: -1, created_at: -1 });
+  res.json(staff ? list : list.map(forPublic));
 });
 
 router.get("/propiedades/:id", async (req, res) => {
   const property = await findProperty(req.params.id);
-  if (!property.publicada && !isStaff(req)) throw fail(404, "Esa publicación no existe.");
+  if (!isStaff(req)) {
+    if (!property.publicada) throw fail(404, "Esa publicación no existe.");
+    return res.json(forPublic(property));
+  }
   res.json(property);
+});
+
+/* El panel manda el link de Google Maps y recibe la ubicación (para verla antes de guardar) */
+router.post("/ubicacion", requireStaff, async (req, res) => {
+  res.json(await resolveLocation(req.body?.link));
 });
 
 router.post("/propiedades", requireStaff, async (req, res) => {

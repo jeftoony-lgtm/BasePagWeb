@@ -75,6 +75,7 @@ export const api = {
   property: (id) => get(`/propiedades/${id}`),
   saveProperty: (p) => (p.id ? put(`/propiedades/${p.id}`, p) : post("/propiedades", p)),
   deleteProperty: (id) => request("DELETE", `/propiedades/${id}`),
+  locate: (link) => post("/ubicacion", { link }),
   async uploadPhoto(file) {
     const form = new FormData();
     form.append("foto", file);

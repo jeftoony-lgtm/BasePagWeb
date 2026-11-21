@@ -57,9 +57,8 @@ export function Inmobiliaria() {
           <div className="field"><label htmlFor="sWa">WhatsApp (con 598)</label>
             <input id="sWa" inputMode="tel" placeholder="59899787834" {...field("whatsapp")} />
             <span className="small muted">{prettyWhatsapp(info.whatsapp)}</span></div>
-          <div className="field"><label htmlFor="sPhone">Otro teléfono (opcional)</label><input id="sPhone" inputMode="tel" {...field("telefono2")} /></div>
+          <div className="field"><label htmlFor="sIg">Instagram (usuario)</label><input id="sIg" placeholder="jtcventasyalquileres" {...field("instagram")} /></div>
         </div>
-        <div className="field"><label htmlFor="sIg">Instagram (usuario)</label><input id="sIg" placeholder="jtcventasyalquileres" {...field("instagram")} /></div>
         <div className="field"><label htmlFor="sServ">Servicios (uno por renglón)</label>
           <textarea id="sServ" rows={6} value={servicios} onChange={(e) => setServicios(e.target.value)} /></div>
         <div className="error-text">{error}</div>

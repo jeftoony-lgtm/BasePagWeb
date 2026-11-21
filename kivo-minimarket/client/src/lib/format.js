@@ -62,3 +62,14 @@ export function timeAgo(iso) {
   if (hours < 24) return `hace ${hours} h`;
   return formatDate(iso, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
+
+/* ---------- Mapa (Google Maps, sin clave) ---------- */
+// ubicacion = { lat, lng } o { texto: "Calle 3 y 14, Treinta y Tres" }
+const mapQuery = (u) => (u?.lat != null ? `${u.lat},${u.lng}` : u?.texto || "");
+
+/** Mapa para meter en la página (iframe) */
+export const mapEmbed = (u, aproximada = false) =>
+  `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery(u))}&z=${aproximada ? 15 : 16}&hl=es&output=embed`;
+
+/** Link para abrir el lugar en Google Maps (en el celular abre la app) */
+export const mapLink = (u) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery(u))}`;

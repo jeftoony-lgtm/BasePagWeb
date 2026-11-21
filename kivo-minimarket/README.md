@@ -104,7 +104,7 @@ Lo que cambies se actualiza solo en el navegador mientras programás.
 como dueño, ya activa. Todas las que vengan después quedan esperando a que el dueño las active.
 
 **¿Querés probar con datos de ejemplo?** `npm run seed:demo` **borra toda la base** y carga
-las publicaciones de ejemplo y dos cuentas: `dueno@demo.uy` y `agente@demo.uy` (contraseña `demo123`).
+las publicaciones de ejemplo y dos cuentas: `dueno@jtc.uy` y `empleado@jtc.uy` (contraseña `prueba123`).
 Solo para tu compu, nunca en el sitio real.
 
 ---

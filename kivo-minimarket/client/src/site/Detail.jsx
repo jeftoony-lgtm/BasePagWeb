@@ -5,7 +5,7 @@
 // =====================================================================
 
 import { useEffect, useRef, useState } from "react";
-import { OPERACIONES, TIPOS, ESTADOS, price, ribbon, whatsappLink } from "../lib/format.js";
+import { OPERACIONES, TIPOS, ESTADOS, price, ribbon, whatsappLink, mapEmbed, mapLink } from "../lib/format.js";
 
 function Gallery({ fotos }) {
   const [index, setIndex] = useState(0);
@@ -83,6 +83,16 @@ export function Detail({ property: p, info, onClose }) {
             <ul className="features">{p.caracteristicas.map((c) => <li key={c}>{c}</li>)}</ul>
           )}
           {p.descripcion && <p className="detail-text">{p.descripcion}</p>}
+
+          {p.ubicacion && (
+            <section className="detail-map">
+              <h3>{p.ubicacion_aproximada ? "Zona aproximada" : "Ubicación"}</h3>
+              <div className="detail-map-frame">
+                <iframe title={`Mapa: ${p.titulo}`} src={mapEmbed(p.ubicacion, p.ubicacion_aproximada)} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+              </div>
+              <a href={mapLink(p.ubicacion)} target="_blank" rel="noopener">Abrir en Google Maps ↗</a>
+            </section>
+          )}
 
           {!sign || p.estado === "reservada" ? (
             <a className="btn btn-wa detail-cta" href={whatsappLink(info.whatsapp, message)} target="_blank" rel="noopener">
