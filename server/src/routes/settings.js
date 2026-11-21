@@ -12,10 +12,14 @@ import { DEFAULT_SETTINGS } from "../seed-data.js";
 
 export const router = Router();
 
-/** Todos los ajustes: { inmobiliaria: {...} } (con valores por defecto si falta alguno) */
+/** Todos los ajustes: { inmobiliaria: {...} } (con valores por defecto si falta alguno, por ejemplo un dato nuevo como el email) */
 export async function loadSettings() {
-  const rows = await Setting.find();
-  return { ...structuredClone(DEFAULT_SETTINGS), ...Object.fromEntries(rows.map((r) => [r._id, r.value])) };
+  const settings = structuredClone(DEFAULT_SETTINGS);
+  for (const row of await Setting.find()) {
+    const isObject = row.value && typeof row.value === "object" && !Array.isArray(row.value);
+    settings[row._id] = isObject ? { ...settings[row._id], ...row.value } : row.value;
+  }
+  return settings;
 }
 
 router.get("/settings", async (_req, res) => {

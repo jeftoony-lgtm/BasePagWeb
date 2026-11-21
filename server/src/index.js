@@ -11,7 +11,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
 import { connectDB } from "./db.js";
-import { fixEstados } from "./models.js";
+import { fixEstados, fixRefs } from "./models.js";
+import { shareRoute } from "./share.js";
 import { readUser } from "./auth.js";
 import { errorHandler, fail } from "./http.js";
 
@@ -31,11 +32,16 @@ app.use("/api", () => { throw fail(404, "Esa dirección no existe."); });
 
 // Producción: la página compilada por Vite (npm run build)
 const dist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../client/dist");
-if (fs.existsSync(dist)) app.use(express.static(dist));
+if (fs.existsSync(dist)) {
+  // Link corto de cada propiedad (con foto y precio al mandarlo por WhatsApp): ver share.js
+  app.get("/propiedad/:ref", shareRoute(fs.readFileSync(path.join(dist, "index.html"), "utf8")));
+  app.use(express.static(dist));
+}
 
 app.use(errorHandler);
 
 const port = Number(process.env.PORT) || 3001;
 await connectDB();
 await fixEstados();
+await fixRefs();
 app.listen(port, () => console.log(`🏠 Inmobiliaria lista en http://localhost:${port}`));

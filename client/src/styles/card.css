@@ -42,21 +42,36 @@
   flex-direction: column;
   width: 100%;
   text-align: left;
-  background: var(--green);
-  border-radius: 6px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(42,33,26,.14);
+  box-shadow: 0 8px 24px rgba(42,33,26,.10);
   transition: transform .2s,box-shadow .2s;
 }
 
-button.pcard:hover {
+.pcard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 18px 40px rgba(42,33,26,.22);
+  box-shadow: 0 16px 36px rgba(42,33,26,.18);
 }
 
-button.pcard:focus-visible {
+.pcard-open {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+div.pcard-open {
+  cursor: default;
+}
+
+.pcard-open:focus-visible {
   outline: 3px solid var(--orange);
-  outline-offset: 3px;
+  outline-offset: -3px;
 }
 
 .pcard-photo {
@@ -135,7 +150,7 @@ button.pcard:focus-visible {
 .pcard-count {
   position: absolute;
   right: 10px;
-  bottom: 38px;
+  bottom: 10px;
   padding: 4px 9px;
   border-radius: 99px;
   background: rgba(0,0,0,.55);
@@ -144,49 +159,246 @@ button.pcard:focus-visible {
   font-weight: 700;
 }
 
-.pcard-info {
-  margin: -26px 12px 12px;
-  position: relative;
-  padding: 10px 12px 12px;
-  border-radius: 10px;
-  background: rgba(255,253,249,.94);
-  color: var(--green-d);
-  text-align: center;
+/* ---------- Abajo de la foto ---------- */
+.pcard-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px 12px;
+  color: var(--ink);
 }
 
-.pcard-pill {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 6px 14px;
-  border-radius: 99px;
-  background: var(--green);
-  color: #fff;
-  font-size: 12.5px;
+.pcard-title {
+  font-size: 16.5px;
   font-weight: 700;
+  line-height: 1.3;
+  color: var(--deep);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pcard-price {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pcard-price b {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--deep);
+}
+
+.pcard-badge {
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--cream);
+  color: var(--green);
+  font-size: 12.5px;
+  font-weight: 800;
   letter-spacing: .06em;
   text-transform: uppercase;
 }
 
-.pcard-pill span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.pcard-where {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 13.5px;
+  color: var(--muted);
 }
 
-.pcard-pill b {
-  white-space: nowrap;
+.pcard-where span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.pcard-info p {
-  margin-top: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: .03em;
-  text-transform: uppercase;
-  line-height: 1.45;
+.pcard-where .icon {
+  width: 15px;
+  height: 15px;
+}
+
+.pcard-facts {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.pcard-facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green-d);
+}
+
+.pcard-facts .icon {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+}
+
+/* ---------- Botones de contacto (tarjeta y ficha) ---------- */
+.contact-buttons {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px 16px;
+  margin-top: auto;
+}
+
+.cbtn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .15s,border-color .15s;
+}
+
+.cbtn .icon {
+  width: 17px;
+  height: 17px;
+}
+
+.cbtn-mail {
+  background: var(--cream);
+  color: var(--green-d);
+}
+
+.cbtn-mail:hover {
+  border-color: var(--green);
+}
+
+.cbtn-wa {
+  background: #e9f9ef;
+  border-color: #bfe9cf;
+  color: #12723a;
+}
+
+.cbtn-wa:hover {
+  border-color: #25d366;
+}
+
+.cbtn-call {
+  flex: none;
+  width: 42px;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--green-d);
+  background: #fff;
+}
+
+.cbtn-call:hover {
+  border-color: var(--green);
+}
+
+.contact-buttons.big {
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.contact-buttons.big .cbtn {
+  min-height: 50px;
+  font-size: 15.5px;
+}
+
+.contact-buttons.big .cbtn-call {
+  flex: 1;
+  width: auto;
+  border-radius: 10px;
+}
+
+.pcard-ribbon.soon {
+  background: var(--orange);
 }
 
 .pcard.closed .pcard-photo img {
   filter: saturate(.75);
+}
+
+/* ---------- Cartel "Precio rebajado" ---------- */
+.price-drop {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 6px 10px;
+  border-radius: 99px;
+  background: rgba(34,27,21,.78);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.25);
+}
+
+.price-drop .icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* En la ficha va al lado del precio, no encima de la foto */
+.price-drop.inline {
+  position: static;
+  vertical-align: middle;
+  font-family: var(--font-body);
+  font-size: 13px;
+  background: var(--deep);
+  box-shadow: none;
+}
+
+/* El precio de antes, tachado */
+.price-before {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.detail-price .price-before {
+  margin: 0 8px 0 10px;
+  font-family: var(--font-body);
+  font-size: 17px;
+}
+
+/* Código de referencia */
+.pcard-ref {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  color: var(--muted);
+}
+
+.detail-ref {
+  margin-top: -6px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.detail-ref b {
+  color: var(--ink);
+  letter-spacing: .03em;
 }

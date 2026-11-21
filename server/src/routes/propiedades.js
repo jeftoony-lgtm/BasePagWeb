@@ -6,7 +6,7 @@
 
 import { Router } from "express";
 import multer from "multer";
-import { Property, Photo, OPERACIONES, ESTADOS, TIPOS } from "../models.js";
+import { Property, Photo, nextRef, OPERACIONES, ESTADOS, TIPOS, DEPARTAMENTOS, ORIENTACIONES, CONSERVACION } from "../models.js";
 import { isStaff, requireStaff } from "../auth.js";
 import { fail } from "../http.js";
 import { logActivity, changes } from "../activity.js";
@@ -22,8 +22,8 @@ const upload = multer({
   fileFilter: (_req, file, done) => done(file.mimetype.startsWith("image/") ? null : fail(400, "Eso no es una foto."), true),
 });
 
-const TEXTS = ["titulo", "barrio", "direccion", "precio_extra", "descripcion"];
-const NUMBERS = ["precio", "dormitorios", "banos", "metros"];
+const TEXTS = ["titulo", "ciudad", "barrio", "direccion", "precio_extra", "descripcion", "piso", "gastos_comunes", "contribucion"];
+const NUMBERS = ["precio", "dormitorios", "banos", "metros", "metros_terreno"];
 const LOGGED = ["titulo", "operacion", "estado", "precio", "moneda", "publicada", "destacada"];
 
 /** Se queda solo con los campos que se pueden cambiar, ya limpios */
@@ -48,6 +48,26 @@ function propertyFields(body) {
     if (!TIPOS.includes(body.tipo)) throw fail(400, "Ese tipo de propiedad no existe.");
     fields.tipo = body.tipo;
   }
+  if ("departamento" in body) {
+    const value = String(body.departamento ?? "");
+    if (value && !DEPARTAMENTOS.includes(value)) throw fail(400, "Ese departamento no existe.");
+    fields.departamento = value;
+  }
+  if ("orientacion" in body) {
+    const value = String(body.orientacion ?? "");
+    if (!ORIENTACIONES.includes(value)) throw fail(400, "Esa orientación no existe.");
+    fields.orientacion = value;
+  }
+  if ("garaje" in body) fields.garaje = Boolean(body.garaje);
+  if ("conservacion" in body) {
+    const value = String(body.conservacion ?? "");
+    if (!CONSERVACION.includes(value)) throw fail(400, "Ese estado de conservación no existe.");
+    fields.conservacion = value;
+  }
+  if ("servicios" in body) {
+    const list = Array.isArray(body.servicios) ? body.servicios : [];
+    fields.servicios = [...new Set(list.map((s) => String(s).trim().slice(0, 60)).filter(Boolean))].slice(0, 30);
+  }
   if ("moneda" in body) fields.moneda = body.moneda === "UYU" ? "UYU" : "USD";
   if ("publicada" in body) fields.publicada = Boolean(body.publicada);
   if ("destacada" in body) fields.destacada = Boolean(body.destacada);
@@ -63,6 +83,23 @@ function propertyFields(body) {
     fields.fotos = list.map(String).filter((url) => /^\/api\/photos\/[a-f0-9]{24}$/.test(url)).slice(0, MAX_FOTOS);
   }
   return fields;
+}
+
+/**
+ * Cartel "Precio rebajado": si al editar baja el precio, se guarda el de antes.
+ * - Si vuelve a bajar, se sigue mostrando el primero (el más alto), así se ve toda la rebaja.
+ * - Si sube hasta el precio de antes (o más), cambia la moneda, queda en "Consultar"
+ *   o se toca "Quitar cartel" en el panel, el cartel se va.
+ */
+function ajustarRebaja(property, antes, quitar) {
+  const ahora = property.precio;
+  if (quitar || ahora == null || property.moneda !== antes.moneda) {
+    property.precio_anterior = null;
+  } else if (antes.precio != null && ahora < antes.precio) {
+    property.precio_anterior = Math.max(property.precio_anterior ?? 0, antes.precio);
+  } else if (property.precio_anterior != null && ahora >= property.precio_anterior) {
+    property.precio_anterior = null;
+  }
 }
 
 async function findProperty(id) {
@@ -102,7 +139,7 @@ router.post("/ubicacion", requireStaff, async (req, res) => {
 router.post("/propiedades", requireStaff, async (req, res) => {
   const fields = propertyFields(req.body);
   if (!fields.titulo) throw fail(400, "Falta el título.");
-  const property = await Property.create(fields);
+  const property = await Property.create({ ...fields, ref: await nextRef() });
   await logActivity(req, "propiedades", property.id, "insert", { titulo: property.titulo });
   res.status(201).json(property);
 });
@@ -112,7 +149,9 @@ router.put("/propiedades/:id", requireStaff, async (req, res) => {
   const fields = propertyFields(req.body);
   if ("titulo" in fields && !fields.titulo) throw fail(400, "Falta el título.");
   const diff = changes(property.toObject(), fields, LOGGED);
+  const antes = { precio: property.precio, moneda: property.moneda };
   property.set(fields);
+  ajustarRebaja(property, antes, Boolean(req.body.quitar_rebaja));
   await property.save();
   if (Object.keys(diff).length) await logActivity(req, "propiedades", property.id, "update", { ...diff, _titulo: property.titulo });
   res.json(property);

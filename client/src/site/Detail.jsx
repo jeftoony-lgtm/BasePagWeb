@@ -5,7 +5,9 @@
 // =====================================================================
 
 import { useEffect, useRef, useState } from "react";
-import { OPERACIONES, TIPOS, ESTADOS, price, ribbon, whatsappLink, mapEmbed, mapLink } from "../lib/format.js";
+import { OPERACIONES, TIPOS, ESTADOS, ORIENTACIONES, CONSERVACION, price, ribbon, cerrada, rebajado, precioAnterior, refCode, whatsappLink, mapEmbed, mapLink, lugar } from "../lib/format.js";
+import { ContactButtons, PriceDropBadge } from "./Card.jsx";
+import { PinIcon, CheckIcon, quickFacts } from "./icons.jsx";
 
 function Gallery({ fotos }) {
   const [index, setIndex] = useState(0);
@@ -52,13 +54,27 @@ export function Detail({ property: p, info, onClose }) {
   }, [onClose]);
 
   const sign = ribbon(p);
-  const facts = [
-    [TIPOS[p.tipo], "Tipo"],
-    p.dormitorios != null && [p.dormitorios, p.dormitorios === 1 ? "Dormitorio" : "Dormitorios"],
-    p.banos != null && [p.banos, p.banos === 1 ? "Baño" : "Baños"],
-    p.metros != null && [`${p.metros} m²`, "Edificados"],
-  ].filter(Boolean);
-  const message = `Hola! Me interesa la propiedad "${p.titulo}"${p.barrio ? ` (${p.barrio})` : ""}. ${location.origin}/#propiedad/${p.id}`;
+  const donde = lugar(p);
+  const facts = quickFacts(p);
+  // La ficha: solo los datos que están cargados (lo que queda vacío no aparece)
+  const ficha = [
+    ["Referencia", refCode(p, info?.nombre)],
+    ["Tipo", TIPOS[p.tipo]],
+    ["Departamento", p.departamento],
+    ["Ciudad", p.ciudad],
+    ["Zona", p.barrio],
+    ["Dirección", p.direccion],
+    ["Dormitorios", p.dormitorios],
+    ["Baños", p.banos],
+    ["Superficie edificada", p.metros != null && `${p.metros} m²`],
+    ["Superficie del terreno", p.metros_terreno != null && `${p.metros_terreno} m²`],
+    ["Piso", p.piso],
+    ["Orientación", ORIENTACIONES[p.orientacion]],
+    ["Estado", CONSERVACION[p.conservacion]],
+    ["Garaje", p.garaje && "Sí"],
+    ["Gastos comunes", p.gastos_comunes],
+    ["Contribución inmobiliaria", p.contribucion],
+  ].filter(([, value]) => value !== null && value !== undefined && value !== "" && value !== false);
 
   return (
     <div className="detail" role="dialog" aria-modal="true" aria-label={p.titulo} onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -68,21 +84,54 @@ export function Detail({ property: p, info, onClose }) {
         <div className="detail-body">
           <div className="detail-tags">
             <span className="tag op">{OPERACIONES[p.operacion]}</span>
-            {sign && <span className="tag closed">{ESTADOS[p.estado]}</span>}
-            {p.barrio && <span className="tag">📍 {p.barrio}</span>}
+            {sign && <span className={`tag ${p.estado === "proximamente" ? "soon" : "closed"}`}>{ESTADOS[p.estado]}</span>}
           </div>
           <h2>{p.titulo}</h2>
-          {p.direccion && <p className="detail-address">{p.direccion}</p>}
-          <p className="detail-price">{price(p)}</p>
+          {p.ref != null && <p className="detail-ref">Ref. <b>{refCode(p, info?.nombre)}</b> · nombralo al consultar</p>}
+          <p className="detail-price">
+            {price(p)}
+            {rebajado(p) && <><s className="price-before">{precioAnterior(p)}</s> <PriceDropBadge inline /></>}
+          </p>
+          {donde && <p className="detail-where"><PinIcon /> {donde}</p>}
 
-          <dl className="facts">
-            {facts.map(([value, label]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
-          </dl>
+          {facts.length > 0 && (
+            <ul className="pcard-facts detail-facts">
+              {facts.map(({ Icon, value, label }) => <li key={label}><Icon /> {value} <small>{label}</small></li>)}
+            </ul>
+          )}
+
+          {cerrada(p) ? (
+            <a className="btn btn-ghost" href={whatsappLink(info.whatsapp, "Hola! Busco una propiedad parecida a una que ya se cerró. ¿Tienen algo similar?")} target="_blank" rel="noopener">
+              Ya se cerró · Pedir algo parecido
+            </a>
+          ) : (
+            <ContactButtons property={p} info={info} big />
+          )}
+
+          {p.descripcion && <p className="detail-text">{p.descripcion}</p>}
+
+          {ficha.length > 0 && (
+            <section className="detail-section">
+              <h3>Ficha</h3>
+              <dl className="ficha">
+                {ficha.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
+              </dl>
+            </section>
+          )}
+
+          {p.servicios?.length > 0 && (
+            <section className="detail-section">
+              <h3>Servicios</h3>
+              <ul className="servicios">{p.servicios.map((s) => <li key={s}><CheckIcon /> {s}</li>)}</ul>
+            </section>
+          )}
 
           {p.caracteristicas?.length > 0 && (
-            <ul className="features">{p.caracteristicas.map((c) => <li key={c}>{c}</li>)}</ul>
+            <section className="detail-section">
+              <h3>Características</h3>
+              <ul className="features">{p.caracteristicas.map((c) => <li key={c}>{c}</li>)}</ul>
+            </section>
           )}
-          {p.descripcion && <p className="detail-text">{p.descripcion}</p>}
 
           {p.ubicacion && (
             <section className="detail-map">
@@ -92,16 +141,6 @@ export function Detail({ property: p, info, onClose }) {
               </div>
               <a href={mapLink(p.ubicacion)} target="_blank" rel="noopener">Abrir en Google Maps ↗</a>
             </section>
-          )}
-
-          {!sign || p.estado === "reservada" ? (
-            <a className="btn btn-wa detail-cta" href={whatsappLink(info.whatsapp, message)} target="_blank" rel="noopener">
-              Consultar por WhatsApp
-            </a>
-          ) : (
-            <a className="btn btn-ghost detail-cta" href={whatsappLink(info.whatsapp, "Hola! Busco una propiedad parecida a una que ya se cerró. ¿Tienen algo similar?")} target="_blank" rel="noopener">
-              Ya se cerró · Pedir algo parecido
-            </a>
           )}
         </div>
       </article>

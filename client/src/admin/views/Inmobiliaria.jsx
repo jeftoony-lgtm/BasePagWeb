@@ -27,9 +27,11 @@ export function Inmobiliaria() {
       nombre: (info.nombre || "").trim(),
       whatsapp: (info.whatsapp || "").replace(/\D/g, ""),
       instagram: (info.instagram || "").trim().replace(/^@/, ""),
+      email: (info.email || "").trim().toLowerCase(),
       servicios: servicios.split("\n").map((s) => s.trim()).filter(Boolean),
     };
     if (!value.nombre) { setError("Falta el nombre."); return false; }
+    if (value.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.email)) { setError("Revisá el email."); return false; }
     if (value.whatsapp.length < 8) { setError("El WhatsApp tiene que tener el código de país. Ej: 59899787834"); return false; }
     setError("");
     try {
@@ -59,6 +61,8 @@ export function Inmobiliaria() {
             <span className="small muted">{prettyWhatsapp(info.whatsapp)}</span></div>
           <div className="field"><label htmlFor="sIg">Instagram (usuario)</label><input id="sIg" placeholder="jtcventasyalquileres" {...field("instagram")} /></div>
         </div>
+        <div className="field"><label htmlFor="sMail">Email (para el botón "Consultar")</label>
+          <input id="sMail" type="email" inputMode="email" placeholder="jtcventasyalquileres@gmail.com" {...field("email")} /></div>
         <div className="field"><label htmlFor="sServ">Servicios (uno por renglón)</label>
           <textarea id="sServ" rows={6} value={servicios} onChange={(e) => setServicios(e.target.value)} /></div>
         <div className="error-text">{error}</div>
