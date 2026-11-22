@@ -21,6 +21,7 @@ export const ORDER_STATES = {
 export const SECTIONS = [
   { id: "resumen",   icon: "📊", name: "Resumen",        owner: true },
   { id: "pedidos",   icon: "🧾", name: "Pedidos" },
+  { id: "chat",      icon: "💬", name: "Chat en vivo" },
   { id: "productos", icon: "🛒", name: "Productos" },
   { id: "canjear",   icon: "🎟️", name: "Canjear código" },
   { id: "promos",    icon: "🎡", name: "Promos y local", owner: true },

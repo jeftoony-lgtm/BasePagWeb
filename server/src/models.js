@@ -79,6 +79,8 @@ const orderSchema = new Schema({
   dia: { type: String, default: null },  // "2026-11-13"
   hora: { type: String, default: null }, // "20:30"
   nota: { type: String, default: "", maxlength: 500 },
+  // Qué hacer si justo no hay algún producto: cambiarlo por uno parecido o sacarlo del pedido
+  si_falta: { type: String, enum: ["reemplazar", "quitar"], default: "reemplazar" },
   items: [{ _id: false, id: String, nombre: String, cantidad: Number, precio: { type: Number, default: null } }],
   total: { type: Number, default: 0 },
   estado: { type: String, enum: ["nuevo", "preparando", "listo", "entregado", "cancelado"], default: "nuevo" },

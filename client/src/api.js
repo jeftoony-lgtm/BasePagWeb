@@ -114,6 +114,40 @@ export const api = {
   /* ---------- Asistente ---------- */
   chat: (messages, cart) => post("/asistente", { messages, cart }),
 
+  /* ---------- Chat en vivo: lo que usa el cliente ---------- */
+  liveStatus: () => get("/vivo/estado"),
+  liveStart: (nombre, texto, canasta) => post("/vivo/chats", { nombre, texto, canasta }),
+  liveChat: (id, token) => get(`/vivo/chats/${id}?token=${encodeURIComponent(token)}`),
+  liveSend: (id, token, texto) => post(`/vivo/chats/${id}/mensajes`, { token, texto }),
+  liveClose: (id, token) => post(`/vivo/chats/${id}/cerrar`, { token }),
+  /** Mensajes nuevos de una charla. Devuelve una función para cortar la conexión */
+  onLiveChat(id, token, callback, onReconnect) {
+    const source = new EventSource(`/api/vivo/chats/${id}/events?token=${encodeURIComponent(token)}`);
+    let first = true;
+    source.onopen = () => { if (!first) onReconnect?.(); first = false; };
+    source.onmessage = (event) => {
+      try { callback(JSON.parse(event.data)); } catch { /* mensaje roto: se ignora */ }
+    };
+    return () => source.close();
+  },
+
+  /* ---------- Chat en vivo: lo que usa el panel ---------- */
+  liveChats: () => get("/vivo/chats"),
+  liveReply: (id, texto) => post(`/vivo/chats/${id}/responder`, { texto }),
+  liveRead: (id) => post(`/vivo/chats/${id}/leido`),
+  liveEnd: (id) => post(`/vivo/chats/${id}/terminar`),
+  /** Charlas en vivo. atiende = cuenta como "hay alguien para atender" */
+  onLiveChats(atiende, callback) {
+    const source = new EventSource(`/api/vivo/panel/events?atiende=${atiende ? 1 : 0}&token=${encodeURIComponent(session.token || "")}`);
+    source.onmessage = (event) => {
+      try {
+        const { chat } = JSON.parse(event.data);
+        callback(chat);
+      } catch { /* mensaje roto: se ignora */ }
+    };
+    return () => source.close();
+  },
+
   /* ---------- Equipo ---------- */
   profiles: () => get("/profiles"),
   updateProfile: (id, changes) => patch(`/profiles/${id}`, changes),

@@ -113,6 +113,7 @@ export function CartDrawer() {
   const toast = useToast();
 
   const [mode, setMode] = useState("retiro");
+  const [ifMissing, setIfMissing] = useState("reemplazar"); // si justo no hay algún producto
   const [dayOffset, setDayOffset] = useState(null);
   const [time, setTime] = useState("");
   const [form, setForm] = useState({ name: "", phone: "", address: "", note: "" });
@@ -141,6 +142,7 @@ export function CartDrawer() {
     dia: dateInUruguay(day?.offset || 0),
     hora: hour,
     nota: form.note.trim(),
+    si_falta: ifMissing,
     items: lines.map(({ id, cantidad, item }) => ({ id, nombre: item.nombre, cantidad, precio: item.precio })),
     total: cart.total,
   };
@@ -162,6 +164,7 @@ export function CartDrawer() {
       : `🛵 Envío a: ${order.direccion} — ${day?.label || ""} ${order.hora}\n`;
     text += `👤 A nombre de: ${order.nombre}\n`;
     if (order.nota) text += `📝 ${order.nota}\n`;
+    text += order.si_falta === "quitar" ? "❌ Si falta algo: sacalo del pedido\n" : "🔄 Si falta algo: cambialo por uno parecido\n";
     return text;
   }
 
@@ -200,6 +203,18 @@ export function CartDrawer() {
               </div>
             ))}
           </div>
+
+          {cart.count > 0 && (
+            <div className="stock-note" role="note">
+              <p><span className="stock-icon" aria-hidden="true">!</span>
+                <span>Si justo nos falta algún producto, <b>te escribimos por WhatsApp</b> antes de preparar tu pedido.</span></p>
+              <div className="stock-choice" role="group" aria-label="Si falta algún producto">
+                <span>Si falta algo:</span>
+                <button type="button" aria-pressed={ifMissing === "reemplazar"} onClick={() => setIfMissing("reemplazar")}>🔄 Cambialo por uno parecido</button>
+                <button type="button" aria-pressed={ifMissing === "quitar"} onClick={() => setIfMissing("quitar")}>❌ Sacalo del pedido</button>
+              </div>
+            </div>
+          )}
 
           <div id="checkout" hidden={!cart.count}>
             <div className="segmented" role="group" aria-label="Forma de entrega">

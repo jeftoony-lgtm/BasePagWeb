@@ -21,6 +21,7 @@ import { router as orderRoutes } from "./routes/orders.js";
 import { router as ruletaRoutes } from "./routes/ruleta.js";
 import { router as teamRoutes } from "./routes/team.js";
 import { router as assistantRoutes } from "./assistant/route.js";
+import { router as liveChatRoutes } from "./livechat.js";
 
 const app = express();
 app.set("trust proxy", 1); // detrás del hosting: para saber la IP real (límites de uso)
@@ -28,7 +29,7 @@ app.disable("x-powered-by");
 
 app.use("/api", express.json({ limit: "200kb" }), readUser);
 app.use("/api/auth", authRoutes);
-app.use("/api", catalogRoutes, settingsRoutes, orderRoutes, ruletaRoutes, teamRoutes, assistantRoutes);
+app.use("/api", catalogRoutes, settingsRoutes, orderRoutes, ruletaRoutes, teamRoutes, assistantRoutes, liveChatRoutes);
 app.use("/api", () => { throw fail(404, "Esa dirección no existe."); });
 
 // Producción: la página compilada por Vite (npm run build)

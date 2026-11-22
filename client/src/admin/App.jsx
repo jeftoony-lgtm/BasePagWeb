@@ -5,7 +5,7 @@
 //  3. Si está todo bien → carga los datos y muestra la sección pedida (#pedidos, #productos...).
 // =====================================================================
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api.js";
 import { money } from "../lib/format.js";
 import { AdminContext, allowedSections } from "./state.js";
@@ -19,10 +19,12 @@ import { Canjear } from "./views/Canjear.jsx";
 import { Promos } from "./views/Promos.jsx";
 import { Clientes } from "./views/Clientes.jsx";
 import { Equipo } from "./views/Equipo.jsx";
+import { ChatVivo, chatNeedsAnswer } from "./views/ChatVivo.jsx";
 
 const VIEWS = {
   resumen: Resumen,
   pedidos: Pedidos,
+  chat: ChatVivo,
   productos: Productos,
   canjear: Canjear,
   promos: Promos,
@@ -30,14 +32,16 @@ const VIEWS = {
   equipo: Equipo,
 };
 
-const EMPTY = { products: [], categories: [], settings: {}, orders: [] };
+const EMPTY = { products: [], categories: [], settings: {}, orders: [], chats: [] };
+const ATTEND_KEY = "kivo-atiendo"; // si este panel atiende el chat en vivo (se recuerda)
 const Logo = () => <div className="logo"><svg><use href="#cart" /></svg><b>KIV<i>O</i></b></div>;
 
-function Nav({ sections, current, newOrders }) {
+function Nav({ sections, current, newOrders, newChats }) {
   return sections.map((s) => (
     <a key={s.id} href={`#${s.id}`} className={current === s.id ? "on" : ""}>
       <span>{s.icon}</span>{s.name}
       {s.id === "pedidos" && newOrders > 0 && <span className="count">{newOrders}</span>}
+      {s.id === "chat" && newChats > 0 && <span className="count">{newChats}</span>}
     </a>
   ));
 }
@@ -47,6 +51,13 @@ export function AdminApp() {
   const [me, setMe] = useState(undefined); // undefined = cargando, null = nadie adentro
   const [data, setData] = useState(EMPTY);
   const [hash, setHash] = useState(() => location.hash.slice(1));
+  const [attending, setAttendingState] = useState(() => { try { return localStorage.getItem(ATTEND_KEY) !== "0"; } catch { return true; } });
+  const setAttending = useCallback((on) => {
+    setAttendingState(on);
+    try { localStorage.setItem(ATTEND_KEY, on ? "1" : "0"); } catch { /* nada */ }
+  }, []);
+  const chatsRef = useRef([]);
+  const viewRef = useRef("");
 
   const boot = useCallback(async () => {
     let user = null;
@@ -57,8 +68,8 @@ export function AdminApp() {
     }
     if (user?.activo) {
       try {
-        const [categories, products, settings, orders] = await Promise.all([api.categories(), api.products(), api.settings(), api.orders(30)]);
-        setData({ categories, products, settings, orders });
+        const [categories, products, settings, orders, chats] = await Promise.all([api.categories(), api.products(), api.settings(), api.orders(30), api.liveChats().catch(() => [])]);
+        setData({ categories, products, settings, orders, chats });
       } catch (error) {
         console.error(error);
       }
@@ -91,12 +102,30 @@ export function AdminApp() {
     });
   }, [active, toast]);
 
+  // Chat en vivo: llegan las charlas y los mensajes de los clientes (con sonido)
+  useEffect(() => { chatsRef.current = data.chats; }, [data.chats]);
+  useEffect(() => {
+    if (!active) return;
+    return api.onLiveChats(attending, (chat) => {
+      const before = chatsRef.current.find((c) => c.id === chat.id);
+      setData((d) => ({ ...d, chats: [chat, ...d.chats.filter((c) => c.id !== chat.id)] }));
+      const last = chat.mensajes.at(-1);
+      const isNew = last?.de === "cliente" && (!before || before.mensajes.at(-1)?.id !== last.id);
+      if (!isNew) return;
+      beep();
+      navigator.vibrate?.([120, 60, 120]);
+      if (viewRef.current !== "chat") toast(`💬 ${chat.nombre}: ${last.texto.slice(0, 60)}`);
+    });
+  }, [active, attending, toast]);
+
   const isOwner = me?.activo && me.rol === "dueno";
   const sections = allowedSections(isOwner);
   const view = sections.some((s) => s.id === hash) ? hash : "pedidos"; // si no tiene permiso, va a Pedidos
   const newOrders = data.orders.filter((o) => o.estado === "nuevo").length;
+  const newChats = data.chats.filter(chatNeedsAnswer).length;
+  viewRef.current = view;
 
-  useEffect(() => { document.title = (newOrders ? `(${newOrders}) ` : "") + "Panel · Kivo"; }, [newOrders]);
+  useEffect(() => { document.title = (newOrders + newChats ? `(${newOrders + newChats}) ` : "") + "Panel · Kivo"; }, [newOrders, newChats]);
   useEffect(() => { document.querySelector(".mobile-bar .tabs a.on")?.scrollIntoView({ inline: "center", block: "nearest" }); }, [view, me]);
 
   const logout = useCallback(() => {
@@ -115,8 +144,10 @@ export function AdminApp() {
       setProducts: setter("products"),
       setSettings: setter("settings"),
       setOrders: setter("orders"),
+      setChats: setter("chats"),
+      attending, setAttending,
     };
-  }, [me, isOwner, data]);
+  }, [me, isOwner, data, attending, setAttending]);
 
   if (me === undefined) return <div className="loading">Cargando…</div>;
   if (!me) return <AuthScreen onLoggedIn={boot} />;
@@ -132,7 +163,7 @@ export function AdminApp() {
           <aside className="side">
             <Logo />
             <div className="who"><b>{me.nombre}</b><span className={`role${isOwner ? "" : " emp"}`}>{isOwner ? "Dueño" : "Empleado"}</span></div>
-            <nav className="nav"><Nav sections={sections} current={view} newOrders={newOrders} /></nav>
+            <nav className="nav"><Nav sections={sections} current={view} newOrders={newOrders} newChats={newChats} /></nav>
             <div className="bottom">
               <a href="/" target="_blank" rel="noopener">↗ Ver la página</a>
               <button onClick={logout}>Salir</button>
@@ -146,7 +177,7 @@ export function AdminApp() {
                 <Logo />
                 <div className="me"><b>{me.nombre}</b><br /><button className="small" onClick={logout} style={{ textDecoration: "underline", opacity: 0.85 }}>Salir</button></div>
               </div>
-              <nav className="tabs"><Nav sections={sections} current={view} newOrders={newOrders} /></nav>
+              <nav className="tabs"><Nav sections={sections} current={view} newOrders={newOrders} newChats={newChats} /></nav>
             </div>
 
             <main>

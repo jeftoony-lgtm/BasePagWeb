@@ -933,10 +933,19 @@ section.block {
   gap: 14px;
 }
 
-.mapcard svg {
-  width: 100%;
+.map-frame {
+  aspect-ratio: 400 / 260;
   border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
   background: #e9efe2;
+}
+
+.map-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
 .mapcard address {
@@ -1460,6 +1469,66 @@ section.block {
 
 .cart-empty div {
   font-size: 56px;
+}
+
+/* Aviso: si falta algún producto, te escribimos */
+.stock-note {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #f2c9a0;
+  border-radius: 14px;
+  background: #fff6ec;
+  color: #8a4b12;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.stock-note p {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.stock-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.stock-choice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.stock-choice > span {
+  font-weight: 700;
+  margin-right: 2px;
+}
+
+.stock-choice button {
+  padding: 6px 11px;
+  border: 1.5px solid #f2c9a0;
+  border-radius: 99px;
+  background: #fff;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stock-choice button[aria-pressed="true"] {
+  border-color: var(--orange-d);
+  background: var(--orange-d);
+  color: #fff;
 }
 
 .segmented {
@@ -2242,6 +2311,60 @@ section.block {
 
 .chat-form button[disabled] {
   opacity: .5;
+}
+
+/* Chat en vivo con alguien del local */
+.chat-chips .live-chip {
+  border-color: var(--green);
+  color: var(--green-d);
+}
+
+.live-author {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 12px;
+  color: var(--green-d);
+}
+
+.live-time {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  text-align: right;
+  opacity: .6;
+}
+
+.live-error {
+  padding: 0 14px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #a52a20;
+}
+
+.chat-form.live-form {
+  flex-direction: column;
+}
+
+.live-row {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-form .live-name {
+  flex: none;
+}
+
+.chat-form .live-end {
+  align-self: center;
+  width: auto;
+  height: auto;
+  padding: 2px 8px;
+  border-radius: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: underline;
 }
 
 .chat-foot-note {

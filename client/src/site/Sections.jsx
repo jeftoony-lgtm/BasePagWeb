@@ -86,6 +86,9 @@ function HoursTable() {
 }
 
 /* ---------- Visitanos ---------- */
+// Dirección que buscan Google Maps (el mapa de la tarjeta) y el botón "Cómo llegar"
+const MAP_QUERY = encodeURIComponent("Oscar Gestido y Paul Harris, Solymar, Canelones, Uruguay");
+
 export function Visit({ status }) {
   return (
     <section className="block" id="visitanos" style={{ paddingTop: 10 }}>
@@ -99,17 +102,13 @@ export function Visit({ status }) {
           <HoursTable />
         </div>
         <div className="mapcard reveal">
-          <svg viewBox="0 0 400 220" aria-label="Mapa de la esquina">
-            <rect width="400" height="220" fill="#e6eddc" />
-            <g fill="#d3dec4"><rect x="20" y="20" width="140" height="70" rx="8" /><rect x="240" y="20" width="140" height="70" rx="8" /><rect x="20" y="140" width="140" height="60" rx="8" /><rect x="240" y="140" width="140" height="60" rx="8" /></g>
-            <rect x="0" y="100" width="400" height="30" fill="#fff" /><rect x="180" y="0" width="40" height="220" fill="#fff" />
-            <text x="300" y="120" fontSize="11" fontWeight="700" fill="#8a948a" fontFamily="Plus Jakarta Sans">Paul Harris</text>
-            <text x="196" y="60" fontSize="11" fontWeight="700" fill="#8a948a" fontFamily="Plus Jakarta Sans" transform="rotate(-90 196 60)">Oscar Gestido</text>
-            <g transform="translate(222 58)"><path d="M0 0c-14 0-24 10-24 24 0 18 24 40 24 40s24-22 24-40C24 10 14 0 0 0z" fill="#e8952f" /><circle cy="24" r="12" fill="#fff" /><use href="#cart" x="-10" y="14" width="20" height="20" /></g>
-          </svg>
+          <div className="map-frame">
+            <iframe title="Mapa: Kivo en Oscar Gestido y Paul Harris, Solymar" loading="lazy" referrerPolicy="no-referrer-when-downgrade"
+              src={`https://www.google.com/maps?q=${MAP_QUERY}&z=17&hl=es&output=embed`} />
+          </div>
           <address>Oscar Gestido esq. Paul Harris, C.78 · Solymar</address>
           <div className="actions">
-            <a className="btn btn-green" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Oscar%20Gestido%20y%20Paul%20Harris%2C%20Solymar%2C%20Canelones">📍 Cómo llegar</a>
+            <a className="btn btn-green" target="_blank" rel="noopener" href={`https://www.google.com/maps/dir/?api=1&destination=${MAP_QUERY}&hl=es`}>📍 Cómo llegar</a>
             <a className="btn btn-ghost" target="_blank" rel="noopener" href="https://www.instagram.com/kivominimarkets/">📸 @kivominimarkets</a>
           </div>
         </div>

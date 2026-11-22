@@ -38,6 +38,7 @@ function cleanOrder(body) {
     dia: /^\d{4}-\d{2}-\d{2}$/.test(body.dia) ? body.dia : null,
     hora: /^\d{2}:\d{2}$/.test(body.hora) ? body.hora : null,
     nota: text(body.nota, 500),
+    si_falta: body.si_falta === "quitar" ? "quitar" : "reemplazar",
     // El total lo calcula el servidor (los encargos sin precio no suman)
     total: items.reduce((sum, i) => sum + (i.precio ?? 0) * i.cantidad, 0),
   };

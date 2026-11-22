@@ -20,6 +20,7 @@ import { useStore, useFindItem } from "./store.jsx";
 import { useCart, AddButton } from "./cart.jsx";
 import { ProductThumb } from "./Catalog.jsx";
 import { SideScroll } from "./SideScroll.jsx";
+import { LiveChat, hasLiveSession } from "./LiveChat.jsx";
 
 const MAX_HISTORY = 16; // cuántos mensajes se le mandan a la IA (para que sea rápido y barato)
 // Botoncitos de respuesta rápida: cambian según si ya hay algo en la canasta
@@ -68,6 +69,7 @@ export function Assistant({ storeOpen }) {
   const [log, setLog] = useState(() => tabStorage.get("kivo-chat-log", []));
   const [waiting, setWaiting] = useState(false);
   const [open, setOpen] = useState(false);
+  const [live, setLive] = useState(hasLiveSession); // true = hablando con alguien del local
   const [bubble, setBubble] = useState(false);
   const [input, setInput] = useState("");
   const logRef = useRef(null);
@@ -189,28 +191,36 @@ export function Assistant({ storeOpen }) {
       <section className={`chat${open ? " open" : ""}`} id="chat" role="dialog" aria-label="Chat de ayuda">
         <div className="chat-head">
           <div className="avatar"><svg viewBox="0 0 100 100"><use href="#cart" /></svg></div>
-          <div><b>{name}</b><small>de Kivo Mini Market · responde al toque</small></div>
+          {live
+            ? <div><b>Kivo Mini Market</b><small>Chat con alguien del local</small></div>
+            : <div><b>{name}</b><small>de Kivo Mini Market · responde al toque</small></div>}
           <div className="chat-head-actions">
             {cart.count > 0 && (
               <button className="chat-cart" aria-label="Ver canasta" title="Ver canasta" onClick={() => { setOpen(false); cart.setOpen(true); }}>
                 🛒 {cart.count} · {money(cart.total)}
               </button>
             )}
-            {messages.length > 0 && <button className="close-btn" aria-label="Empezar de nuevo" title="Empezar de nuevo" onClick={restart}>↺</button>}
+            {live
+              ? <button className="close-btn" aria-label="Volver al asistente" title="Volver al asistente" onClick={() => setLive(false)}>🤖</button>
+              : <button className="close-btn" aria-label="Hablar con alguien del local" title="Hablar con alguien del local" onClick={() => setLive(true)}>👤</button>}
+            {!live && messages.length > 0 && <button className="close-btn" aria-label="Empezar de nuevo" title="Empezar de nuevo" onClick={restart}>↺</button>}
             <button className="close-btn" aria-label="Cerrar chat" onClick={() => setOpen(false)}>✕</button>
           </div>
         </div>
+        {live ? <LiveChat open={open} onBack={() => setLive(false)} /> : <>
         <div className="chat-log" id="chatLog" aria-live="polite" ref={logRef}>
           {log.map(entry)}
           {waiting && <div className="typing"><i></i><i></i><i></i></div>}
         </div>
         <SideScroll className="chat-chips" hidden={waiting}>
+          <button type="button" className="live-chip" onClick={() => setLive(true)}>👤 Hablar con una persona</button>
           {(cart.count ? SUGGESTIONS_WITH_CART : SUGGESTIONS).map((s) => <button type="button" key={s} onClick={() => send(s)}>{s}</button>)}
         </SideScroll>
         <form className="chat-form" autoComplete="off" onSubmit={(e) => { e.preventDefault(); send(input); setInput(""); }}>
           <input ref={inputRef} maxLength={500} placeholder="Escribí lo que necesitás…" aria-label="Mensaje" value={input} onChange={(e) => setInput(e.target.value)} />
           <button aria-label="Enviar" disabled={waiting}>➤</button>
         </form>
+        </>}
       </section>
     </>
   );

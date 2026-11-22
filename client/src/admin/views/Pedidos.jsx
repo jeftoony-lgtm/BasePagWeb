@@ -59,6 +59,7 @@ function OrderCard({ order: o, onChange }) {
         ))}
       </ul>
       {o.nota && <div className="note">📝 {o.nota}</div>}
+      <div className="small"><b>Si falta algo:</b> {o.si_falta === "quitar" ? "❌ sacarlo del pedido" : "🔄 cambiarlo por uno parecido"}</div>
       <div className="tot"><span>Total</span><b>{money(o.total)}</b></div>
       <div className="acts">
         {next && <button className="btn btn-green" disabled={busy} onClick={() => move(next.to)}>{next.label}</button>}
