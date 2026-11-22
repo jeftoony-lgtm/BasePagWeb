@@ -1378,3 +1378,13 @@ main {
   color: var(--ink);
   letter-spacing: .03em;
 }
+
+/* Papelera */
+.prop-row.trashed .prop-thumb {
+  filter: grayscale(.8);
+  opacity: .75;
+}
+
+.prop-row.trashed .prop-ctrl {
+  flex-wrap: wrap;
+}

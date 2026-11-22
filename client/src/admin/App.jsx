@@ -15,12 +15,14 @@ import { Publicaciones } from "./views/Publicaciones.jsx";
 import { Graficas } from "./views/Graficas.jsx";
 import { Inmobiliaria } from "./views/Inmobiliaria.jsx";
 import { Equipo } from "./views/Equipo.jsx";
+import { Papelera } from "./views/Papelera.jsx";
 
 const VIEWS = {
   publicaciones: Publicaciones,
   graficas: Graficas,
   inmobiliaria: Inmobiliaria,
   equipo: Equipo,
+  papelera: Papelera,
 };
 
 const EMPTY = { properties: [], settings: {} };

@@ -233,14 +233,14 @@ function PropertyForm({ original }) {
   const dirty = isNew || JSON.stringify([p, features]) !== initial.current;
 
   async function onDelete() {
-    const ok = await confirm(`¿Borrar “${p.titulo}”?`,
-      "Se borra para siempre, con sus fotos. Si ya se vendió o alquiló, mejor cambiale el estado: queda en la página como caso de éxito.", "Borrar");
+    const ok = await confirm(`¿Eliminar “${p.titulo}”?`,
+      "Deja de verse en la página al instante y va a la Papelera, donde el dueño la puede restaurar o borrar para siempre. Si ya se vendió o alquiló, mejor cambiale el estado: queda en la página como caso de éxito.", "Eliminar");
     if (!ok) return;
     try {
       await api.deleteProperty(p.id);
       setProperties((list) => list.filter((x) => x.id !== p.id));
       close();
-      toast("Publicación borrada");
+      toast("Publicación enviada a la papelera");
     } catch (e) {
       showError(e);
     }
@@ -402,7 +402,7 @@ function PropertyForm({ original }) {
           confirmText={isNew
             ? (p.publicada ? `Se va a publicar “${p.titulo.trim() || "sin título"}” y se va a ver en la página al instante.` : "Se va a guardar como borrador (no se ve en la página).")
             : `Se van a guardar los cambios de “${p.titulo.trim() || "sin título"}”.`}>
-          {!isNew && <button type="button" className="btn btn-red btn-sm push-left" onClick={onDelete}>Borrar</button>}
+          {!isNew && <button type="button" className="btn btn-red btn-sm push-left" onClick={onDelete}>Eliminar</button>}
         </SaveBar>
       </form>
     </>

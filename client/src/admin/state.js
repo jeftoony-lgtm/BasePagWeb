@@ -15,6 +15,7 @@ export const SECTIONS = [
   { id: "graficas",      icon: "📊", name: "Gráficas",         owner: true },
   { id: "inmobiliaria",  icon: "⚙️", name: "Datos y contacto", owner: true },
   { id: "equipo",        icon: "🔑", name: "Equipo",           owner: true },
+  { id: "papelera",      icon: "🗑️", name: "Papelera",         owner: true },
 ];
 
 export const allowedSections = (isOwner) => SECTIONS.filter((s) => !s.owner || isOwner);

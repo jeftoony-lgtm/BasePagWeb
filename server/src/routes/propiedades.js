@@ -7,7 +7,8 @@
 import { Router } from "express";
 import multer from "multer";
 import { Property, Photo, nextRef, OPERACIONES, ESTADOS, TIPOS, DEPARTAMENTOS, ORIENTACIONES, CONSERVACION } from "../models.js";
-import { isStaff, requireStaff } from "../auth.js";
+import mongoose from "mongoose";
+import { isStaff, requireStaff, requireOwner } from "../auth.js";
 import { fail } from "../http.js";
 import { logActivity, changes } from "../activity.js";
 import { resolveLocation, cleanLocation, approximate } from "../maps.js";
@@ -102,11 +103,15 @@ function ajustarRebaja(property, antes, quitar) {
   }
 }
 
-async function findProperty(id) {
-  const property = await Property.findById(id);
-  if (!property) throw fail(404, "Esa publicación no existe.");
+/** Busca una publicación. Las que están en la papelera no aparecen, salvo que se pida "papelera: true" */
+async function findProperty(id, { papelera = false } = {}) {
+  const property = mongoose.isValidObjectId(id) ? await Property.findById(id) : null;
+  if (!property || Boolean(property.eliminada) !== papelera) throw fail(404, "Esa publicación no existe.");
   return property;
 }
+
+// Lo que está en la papelera no se ve ni en la página ni en el panel
+const NO_ELIMINADA = { eliminada: { $ne: true } };
 
 /** Lo que ve el público: si la ubicación es aproximada, nunca sale el punto exacto */
 function forPublic(property) {
@@ -118,7 +123,7 @@ function forPublic(property) {
 /* ---------- Propiedades ---------- */
 router.get("/propiedades", async (req, res) => {
   const staff = isStaff(req);
-  const list = await Property.find(staff ? {} : { publicada: true }).sort({ destacada: -1, created_at: -1 });
+  const list = await Property.find(staff ? NO_ELIMINADA : { ...NO_ELIMINADA, publicada: true }).sort({ destacada: -1, created_at: -1 });
   res.json(staff ? list : list.map(forPublic));
 });
 
@@ -157,15 +162,40 @@ router.put("/propiedades/:id", requireStaff, async (req, res) => {
   res.json(property);
 });
 
+/* ---------- Borrado lógico: "Eliminar" manda a la papelera ----------
+   La publicación desaparece de la página y del panel, pero sus datos y fotos
+   se guardan. Desde la Papelera (solo el dueño) se restaura o se borra para siempre. */
 router.delete("/propiedades/:id", requireStaff, async (req, res) => {
   const property = await findProperty(req.params.id);
+  property.set({ eliminada: true, eliminada_at: new Date(), eliminada_por: req.user._id });
+  await property.save();
+  await logActivity(req, "propiedades", property.id, "delete", { titulo: property.titulo, papelera: true });
+  res.status(204).end();
+});
+
+router.get("/papelera", requireOwner, async (_req, res) => {
+  const list = await Property.find({ eliminada: true }).sort({ eliminada_at: -1 }).populate("eliminada_por", "nombre email");
+  res.json(list);
+});
+
+router.post("/papelera/:id/restaurar", requireOwner, async (req, res) => {
+  const property = await findProperty(req.params.id, { papelera: true });
+  property.set({ eliminada: false, eliminada_at: null, eliminada_por: null });
+  await property.save();
+  await logActivity(req, "propiedades", property.id, "restore", { titulo: property.titulo });
+  res.json(property);
+});
+
+/* Borrado definitivo (físico): solo el dueño y solo desde la papelera. No se puede deshacer */
+router.delete("/papelera/:id", requireOwner, async (req, res) => {
+  const property = await findProperty(req.params.id, { papelera: true });
   await property.deleteOne();
   // Las fotos que eran solo de esta publicación ya no sirven: se borran para no llenar la base
   const ids = property.fotos.map((url) => url.split("/").pop());
   const stillUsed = await Property.find({ fotos: { $in: property.fotos } }, "fotos");
   const used = new Set(stillUsed.flatMap((p) => p.fotos));
   await Photo.deleteMany({ _id: { $in: ids.filter((id, i) => !used.has(property.fotos[i])) } });
-  await logActivity(req, "propiedades", property.id, "delete", { titulo: property.titulo });
+  await logActivity(req, "propiedades", property.id, "purge", { titulo: property.titulo });
   res.status(204).end();
 });
 
