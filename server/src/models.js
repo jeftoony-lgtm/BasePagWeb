@@ -81,6 +81,10 @@ const propertySchema = new Schema({
   fotos: { type: [String], default: [] },                                  // la primera es la portada
   publicada: { type: Boolean, default: true },  // false = borrador, no se ve en la página
   destacada: { type: Boolean, default: false }, // aparece primero (como los posts fijados)
+  // Borrado lógico: "eliminada" = está en la papelera (no se ve en ningún lado, pero los datos quedan)
+  eliminada: { type: Boolean, default: false },
+  eliminada_at: { type: Date, default: null },
+  eliminada_por: { type: Schema.Types.ObjectId, ref: "User", default: null },
 }, options);
 propertySchema.index({ destacada: -1, created_at: -1 });
 propertySchema.index({ ref: 1 }, { unique: true, partialFilterExpression: { ref: { $type: "number" } } });

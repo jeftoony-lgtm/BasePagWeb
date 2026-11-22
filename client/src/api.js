@@ -74,7 +74,10 @@ export const api = {
   properties: () => get("/propiedades"),
   property: (id) => get(`/propiedades/${id}`),
   saveProperty: (p) => (p.id ? put(`/propiedades/${p.id}`, p) : post("/propiedades", p)),
-  deleteProperty: (id) => request("DELETE", `/propiedades/${id}`),
+  deleteProperty: (id) => request("DELETE", `/propiedades/${id}`), // va a la papelera (borrado lógico)
+  trash: () => get("/papelera"),
+  restoreProperty: (id) => post(`/papelera/${id}/restaurar`, {}),
+  purgeProperty: (id) => request("DELETE", `/papelera/${id}`), // borrado definitivo
   locate: (link) => post("/ubicacion", { link }),
   async uploadPhoto(file) {
     const form = new FormData();

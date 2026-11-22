@@ -22,7 +22,9 @@ function describe(a, properties) {
     const fromList = properties.find((p) => p.id === a.registro)?.titulo;
     const name = <b>{d._titulo || d.titulo || fromList || "una publicación"}</b>;
     if (a.accion === "insert") return ["➕", <>{who} publicó {name}</>];
-    if (a.accion === "delete") return ["🗑️", <>{who} borró {name}</>];
+    if (a.accion === "delete") return ["🗑️", <>{who} {d.papelera ? "mandó a la papelera" : "borró"} {name}</>];
+    if (a.accion === "restore") return ["♻️", <>{who} restauró {name} de la papelera</>];
+    if (a.accion === "purge") return ["❌", <>{who} eliminó definitivamente {name}</>];
     if (d.estado) return ["🏷️", <>{who} marcó {name} como <b>{ESTADOS[d.estado[1]] || d.estado[1]}</b></>];
     if (d.publicada) return [d.publicada[1] ? "👁️" : "🙈", <>{who} {d.publicada[1] ? "mostró" : "ocultó"} {name}</>];
     if (d.precio) return ["💲", <>{who} cambió el precio de {name}</>];

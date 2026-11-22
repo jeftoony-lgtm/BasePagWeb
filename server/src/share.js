@@ -26,7 +26,7 @@ function priceText(p) {
 export function shareRoute(indexHtml) {
   return async (req, res) => {
     const ref = Number(req.params.ref);
-    const p = Number.isInteger(ref) ? await Property.findOne({ ref, publicada: true }) : null;
+    const p = Number.isInteger(ref) ? await Property.findOne({ ref, publicada: true, eliminada: { $ne: true } }) : null;
     if (!p) return res.type("html").send(indexHtml); // no existe: la página normal
 
     const { inmobiliaria: info } = await loadSettings();
