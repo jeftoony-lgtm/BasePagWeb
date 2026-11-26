@@ -3,7 +3,7 @@
 //  Confianza, servicios, el hogar, preguntas frecuentes y pie.
 // =====================================================================
 
-import { CONTACT, FAQ, HOME_PHOTOS, HOME_POINTS, SERVICES, TRUST, prettyWa } from "./content.js";
+import { CONTACT, FAQ, HOME_PHOTOS, HOME_POINTS, SERVICES, TRUST, prettyWa } from "./content.jsx";
 import { useSite } from "./store.jsx";
 import { Icon, WaIcon } from "./icons.jsx";
 import { Brand } from "./Topbar.jsx";

@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api.js";
-import { FALLBACK_SETTINGS, waLink } from "./content.js";
+import { FALLBACK_SETTINGS, waLink } from "./content.jsx";
 import { SiteContext } from "./store.jsx";
 import { Sky } from "./Sky.jsx";
 import { Topbar } from "./Topbar.jsx";

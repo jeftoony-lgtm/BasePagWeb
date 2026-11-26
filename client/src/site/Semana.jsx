@@ -5,7 +5,7 @@
 // =====================================================================
 
 import { useState } from "react";
-import { DAYS, WEEK_ORDER } from "./content.js";
+import { DAYS, WEEK_ORDER } from "./content.jsx";
 import { useSite } from "./store.jsx";
 import { SectionHead } from "./Sections.jsx";
 

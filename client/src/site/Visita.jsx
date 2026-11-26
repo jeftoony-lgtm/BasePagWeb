@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 import { api } from "../api.js";
-import { CONTACT, prettyWa, waLink } from "./content.js";
+import { CONTACT, prettyWa, waLink } from "./content.jsx";
 import { useSite } from "./store.jsx";
 import { SectionHead } from "./Sections.jsx";
 import { Icon, WaIcon } from "./icons.jsx";
