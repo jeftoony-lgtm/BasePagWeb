@@ -1,15 +1,14 @@
 # =====================================================================
-#  KIVO · Publicación en Render (plan gratis)
+#  LUZ SERENA · Publicación en Render (plan gratis)
 #  Un solo servicio: Express sirve la API (/api) y la página compilada.
-#  Render pide MONGODB_URI y ANTHROPIC_API_KEY al crearlo; JWT_SECRET lo genera solo.
+#  Render pide MONGODB_URI al crearlo; JWT_SECRET lo genera solo.
 # =====================================================================
 
 services:
   - type: web
-    name: kivo-minimarket
+    name: luzserena-residencial
     runtime: node
     plan: free
-    rootDir: kivo-minimarket
     buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /
@@ -20,5 +19,3 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
-      - key: ANTHROPIC_API_KEY
-        sync: false

@@ -1,0 +1,69 @@
+/* =====================================================================
+   LUZ SERENA · Estilos base del panel
+   Colores, letras, botones, campos, interruptores y avisos.
+   (La página pública tiene todo lo suyo en site.css.)
+   ===================================================================== */
+
+/* ---------- Colores de la marca ---------- */
+:root {
+  --gold: #C99A2E;
+  --gold-l: #F3DFA6;
+  --gold-d: #7E5B10;
+  --deep: #221D17;
+  --sage: #5F7657;
+  --red: #B5523B;
+  --cream: #F5F1E8;
+  --paper: #FFFFFF;
+  --ink: #2A251F;
+  --muted: #5C5347;
+  --line: #EAE1CF;
+  --radius: 18px;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* ---------- Reset ---------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.5; background: var(--cream); color: var(--ink); -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; letter-spacing: -.01em; line-height: 1.15; }
+h4 { font-weight: 600; }
+button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+input, select, textarea { font: inherit; color: inherit; }
+a { color: inherit; }
+img { max-width: 100%; display: block; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 8px; }
+
+/* ---------- Botones ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px 20px; border-radius: 99px; font-weight: 600; text-decoration: none; transition: transform .15s, background .2s; }
+.btn:active { transform: scale(.97); }
+.btn[disabled] { opacity: .55; cursor: wait; }
+.btn-gold { background: linear-gradient(135deg, #E2B850, #B98418); color: #2A1C00; box-shadow: 0 8px 20px -10px rgba(185,132,24,.9); }
+.btn-ghost { background: #fff; color: var(--ink); border: 1.5px solid #DDD0B5; }
+.btn-ghost:hover { border-color: var(--gold); }
+.btn-sm { min-height: 44px; padding: 8px 16px; font-size: 14px; }
+
+/* ---------- Campos ---------- */
+.field { margin-bottom: 14px; }
+.field label, .label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+.field input, .field select, .field textarea { width: 100%; min-height: 48px; border-radius: 12px; border: 1.5px solid #DDD0B5; background: #fff; padding: 10px 14px; font-size: 16px; }
+.field textarea { resize: vertical; min-height: 96px; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--gold); outline: 3px solid rgba(201,154,46,.25); }
+
+/* ---------- Interruptor ---------- */
+.switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500; min-height: 44px; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch .track { width: 46px; height: 26px; border-radius: 99px; background: #D9CFBC; position: relative; transition: background .2s; flex: none; }
+.switch .track:after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
+.switch input:checked + .track { background: var(--sage); }
+.switch input:checked + .track:after { transform: translateX(20px); }
+.switch input:focus-visible + .track { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+/* ---------- Avisos ---------- */
+.toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(20px); background: var(--deep); color: #fff; padding: 12px 18px; border-radius: 14px; font-size: 14px; opacity: 0; transition: .3s; z-index: 200; pointer-events: none; max-width: 90vw; text-align: center; }
+.toast.show { opacity: 1; transform: translateX(-50%); }
+.toast.error { background: var(--red); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

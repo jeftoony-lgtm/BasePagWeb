@@ -1,0 +1,21 @@
+{
+  "name": "luzserena-residencial",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "dev": "concurrently -n api,web -c green,yellow \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build -w client",
+    "start": "npm start -w server",
+    "seed": "npm run seed -w server",
+    "seed:demo": "npm run seed:demo -w server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
