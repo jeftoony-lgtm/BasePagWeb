@@ -173,3 +173,7 @@ main { padding: 28px clamp(16px, 3vw, 40px) 80px; }
 .sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
 .sheet-head h3 { font-family: var(--font-body); font-size: 19px; font-weight: 600; }
 .close-btn { width: 44px; height: 44px; border-radius: 50%; background: #F5EEDF; font-size: 18px; flex: none; }
+
+/* ---------- Demostración (solo en la vista previa de GitHub Pages) ---------- */
+.demo-hint { background: #FFF6DC; border: 1px solid #EBD38F; border-radius: 12px; padding: 10px 12px; font-size: 14px; margin-top: 12px; text-align: left; }
+.demo-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: #FFF6DC; border: 1px solid #EBD38F; border-radius: 14px; padding: 10px 14px; margin-bottom: 18px; font-size: 14px; }

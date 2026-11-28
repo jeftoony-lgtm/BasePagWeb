@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import { api } from "../api.js";
+import { PREVIEW, DEMO_LOGIN } from "../preview.js";
 
 const TEXTS = {
   login:  { title: "Panel del equipo",     subtitle: "Entrá con tu mail y tu contraseña.",                button: "Entrar" },
@@ -19,7 +20,7 @@ export const Logo = () => (
 
 export function AuthScreen({ onLoggedIn }) {
   const [mode, setMode] = useState("login");
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: PREVIEW ? DEMO_LOGIN.email : "", password: PREVIEW ? DEMO_LOGIN.password : "" });
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const t = TEXTS[mode];
@@ -51,6 +52,9 @@ export function AuthScreen({ onLoggedIn }) {
         <Logo />
         <h1>{t.title}</h1>
         <p className="muted">{t.subtitle}</p>
+        {PREVIEW && mode === "login" && (
+          <p className="demo-hint">Demostración: ya están cargados los datos del dueño (<b>{DEMO_LOGIN.email}</b> / <b>{DEMO_LOGIN.password}</b>). Tocá <b>Entrar</b>.</p>
+        )}
 
         <form noValidate onSubmit={onSubmit}>
           {mode === "signup" && (
@@ -69,7 +73,7 @@ export function AuthScreen({ onLoggedIn }) {
             <button type="button" onClick={() => switchTo(mode === "login" ? "signup" : "login")}>{mode === "login" ? "Crear cuenta" : "Ya tengo cuenta"}</button>
             {mode === "login" && <button type="button" onClick={() => switchTo("forgot")}>Olvidé mi contraseña</button>}
           </div>
-          <a className="back" href="/">← Volver a la página</a>
+          <a className="back" href="./">← Volver a la página</a>
         </form>
       </div>
     </section>

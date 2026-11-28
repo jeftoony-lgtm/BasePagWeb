@@ -11,6 +11,7 @@ import { api } from "../api.js";
 import { AdminContext, allowedSections } from "./state.js";
 import { ModalProvider, useToast, beep } from "./ui.jsx";
 import { AuthScreen, PendingScreen, Logo } from "./Auth.jsx";
+import { PREVIEW, resetDemo } from "../preview.js";
 
 import { Resumen } from "./views/Resumen.jsx";
 import { Consultas } from "./views/Consultas.jsx";
@@ -141,7 +142,7 @@ export function AdminApp() {
             <div className="who"><b>{me.nombre}</b><span className={`role${isOwner ? "" : " emp"}`}>{isOwner ? "Dueño" : "Equipo"}</span></div>
             <nav className="nav"><Nav sections={sections} current={view} newLeads={newLeads} /></nav>
             <div className="bottom">
-              <a href="/" target="_blank" rel="noopener">↗ Ver la página</a>
+              <a href="./" target="_blank" rel="noopener">↗ Ver la página</a>
               <button onClick={logout}>Salir</button>
             </div>
           </aside>
@@ -157,6 +158,12 @@ export function AdminApp() {
             </div>
 
             <main>
+              {PREVIEW && (
+                <div className="demo-bar" role="note">
+                  <span><b>Demostración.</b> Probá todo con tranquilidad: los cambios quedan solo en este navegador y no le llegan a nadie.</span>
+                  <button className="btn btn-ghost small" onClick={() => { if (confirm("¿Volver a los datos de ejemplo del principio? Se borra lo que cambiaste.")) { resetDemo(); location.reload(); } }}>Reiniciar demostración</button>
+                </div>
+              )}
               <div id="view"><View key={view} /></div>
             </main>
           </div>

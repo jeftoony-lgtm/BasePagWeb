@@ -7,7 +7,6 @@ import { CONTACT, FAQ, HOME_PHOTOS, HOME_POINTS, SERVICES, TRUST, prettyWa } fro
 import { useSite } from "./store.jsx";
 import { Icon, WaIcon } from "./icons.jsx";
 import { Brand } from "./Topbar.jsx";
-import { PREVIEW } from "../preview.js";
 
 export function SectionHead({ eyebrow, title, text }) {
   return (
@@ -101,8 +100,7 @@ export function Footer() {
       <div className="wrap foot-bottom">
         <span>© {new Date().getFullYear()} Luz Serena Residencial</span>
         {/* Acceso discreto al panel para el dueño y el equipo */}
-        <a className="admin-link" href="admin.html" aria-label="Acceso del equipo" title="Acceso del equipo"
-          onClick={PREVIEW ? (e) => { e.preventDefault(); alert("El panel del equipo se habilita cuando la página se publique con su servidor."); } : undefined}>
+        <a className="admin-link" href="admin.html" aria-label="Acceso del equipo" title="Acceso del equipo">
           <Icon name="lock" />
         </a>
       </div>
