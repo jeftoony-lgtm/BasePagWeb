@@ -96,7 +96,15 @@ export function Footer() {
       <div className="wrap foot">
         <div><Brand light /><p style={{ marginTop: 14, maxWidth: "30em" }}>Residencia para la tercera edad en Melo, Cerro Largo. Cuidado integral para adultos mayores.</p></div>
         <div><h4>Contacto</h4>{CONTACT.direccion}, Melo<br />WhatsApp <a {...wa("Hola Luz Serena")}>{prettyWa(settings.whatsapp)}</a><br />{tel && <>Tel. <a href={`tel:+598${tel.replace(/\D/g, "").replace(/^0/, "")}`}>{tel}</a></>}</div>
-        <div><h4>Seguinos</h4><a href={`https://www.instagram.com/${CONTACT.instagram}/`} target="_blank" rel="noopener">Instagram</a><br /><a href="#blog">Novedades</a>{!PREVIEW && <><br /><br /><a className="admin-link" href="admin.html">Acceso del equipo</a></>}</div>
+        <div><h4>Seguinos</h4><a href={`https://www.instagram.com/${CONTACT.instagram}/`} target="_blank" rel="noopener">Instagram</a><br /><a href="#blog">Novedades</a></div>
+      </div>
+      <div className="wrap foot-bottom">
+        <span>© {new Date().getFullYear()} Luz Serena Residencial</span>
+        {/* Acceso discreto al panel para el dueño y el equipo */}
+        <a className="admin-link" href="admin.html" aria-label="Acceso del equipo" title="Acceso del equipo"
+          onClick={PREVIEW ? (e) => { e.preventDefault(); alert("El panel del equipo se habilita cuando la página se publique con su servidor."); } : undefined}>
+          <Icon name="lock" />
+        </a>
       </div>
     </footer>
   );

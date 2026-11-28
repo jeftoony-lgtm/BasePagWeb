@@ -28,7 +28,7 @@ export const prettyWa = (numero) => String(numero).replace(/^598(\d{2})(\d{3})(\
 export const TRUST = [
   { icon: "siren", text: <>Emergencia móvil <b>24/7</b></> },
   { icon: "steth", text: "Control médico semanal en policlínica interna" },
-  { icon: "nurse", text: "Enfermería y asistente social" },
+  { icon: "nurse", text: "Enfermería y Trabajadora Social" },
   { icon: "apple", text: "Menú planificado por Licenciado en Nutrición" },
 ];
 
@@ -38,7 +38,7 @@ export const SERVICES = [
   { icon: "apple", titulo: "Nutrición", texto: "Comidas caseras planificadas por un Licenciado en Nutrición." },
   { icon: "move", titulo: "Fisioterapia semanal", texto: "Ejercicios para ganar autonomía, equilibrio y confianza." },
   { icon: "brain", titulo: "Talleres lúdicos", texto: "Estimulación cognitiva y corporal, y talleres de baile con un profesional." },
-  { icon: "heart", titulo: "Asistente social", texto: "Acompaña a cada familia en el ingreso y en los trámites." },
+  { icon: "heart", titulo: "Trabajadora Social", texto: "Acompaña a cada familia en el ingreso y en los trámites." },
   { icon: "spark", titulo: "Pedicuría y manicuría", texto: "Porque sentirse bien también es verse bien." },
 ];
 

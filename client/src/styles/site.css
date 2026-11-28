@@ -213,7 +213,11 @@ footer{background:#221D17;color:#D9CBAA;padding:56px 0 110px;font-size:.86em}
 .foot{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:30px}
 footer h4{color:#fff;font-family:var(--serif);font-size:1.2em;margin:0 0 10px}
 footer a{color:#F3D27A;text-decoration:none}
-footer .admin-link{color:#8D8169;font-size:.85em}
+.foot-bottom{display:flex;align-items:center;gap:6px;margin-top:36px;padding-top:18px;border-top:1px solid rgba(217,203,170,.15);color:#8D8169;font-size:.9em}
+/* Candado del panel: se ve chiquito, pero el toque es de 44px para el celular */
+footer .admin-link{display:grid;place-items:center;width:44px;height:44px;margin:-12px 0;color:#5E5547;opacity:.7;transition:opacity .2s,color .2s}
+footer .admin-link svg{width:14px;height:14px}
+footer .admin-link:hover,footer .admin-link:focus-visible{opacity:1;color:#D9CBAA}
 @media(max-width:760px){.foot{grid-template-columns:1fr}}
 
 /* WhatsApp flotante */
