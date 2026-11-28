@@ -16,7 +16,7 @@ const BIG_KEY = "luzserena-letra-grande";
 export function Brand({ light = false }) {
   return (
     <a className="brand" href="#inicio" aria-label="Luz Serena, inicio">
-      <img src="/img/logo.webp" alt="" width="48" height="48" />
+      <img src="img/logo.webp" alt="" width="48" height="48" />
       <span><b style={light ? { color: "#fff" } : undefined}>LUZ SERENA</b><small style={light ? { color: "#D9B460" } : undefined}>Residencial</small></span>
     </a>
   );

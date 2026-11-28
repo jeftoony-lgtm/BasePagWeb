@@ -43,12 +43,12 @@ export const SERVICES = [
 ];
 
 export const HOME_PHOTOS = [
-  { src: "/img/fotos/comedor.jpg", alt: "Comedor del residencial", caption: "Comedor" },
-  { src: "/img/fotos/jardin.jpg", alt: "Patio con césped", caption: "Patio y jardín" },
-  { src: "/img/fotos/dormitorio.jpg", alt: "Dormitorio", caption: "Dormitorios" },
-  { src: "/img/fotos/living.jpg", alt: "Living", caption: "Living" },
-  { src: "/img/fotos/merienda.jpg", alt: "Residente en su merienda", caption: "La merienda" },
-  { src: "/img/fotos/bingo.jpg", alt: "Tarde de bingo", caption: "Tarde de bingo" },
+  { src: "img/fotos/comedor.jpg", alt: "Comedor del residencial", caption: "Comedor" },
+  { src: "img/fotos/jardin.jpg", alt: "Patio con césped", caption: "Patio y jardín" },
+  { src: "img/fotos/dormitorio.jpg", alt: "Dormitorio", caption: "Dormitorios" },
+  { src: "img/fotos/living.jpg", alt: "Living", caption: "Living" },
+  { src: "img/fotos/merienda.jpg", alt: "Residente en su merienda", caption: "La merienda" },
+  { src: "img/fotos/bingo.jpg", alt: "Tarde de bingo", caption: "Tarde de bingo" },
 ];
 
 export const HOME_POINTS = [

@@ -35,7 +35,7 @@ export function Semana() {
             </ul>
           </div>
           <div className="week-photo rv">
-            <img src="/img/fotos/bandas.jpg" alt="Residentes haciendo ejercicios con bandas elásticas en el jardín" loading="lazy" />
+            <img src="img/fotos/bandas.jpg" alt="Residentes haciendo ejercicios con bandas elásticas en el jardín" loading="lazy" />
             <div><strong>Moverse es vivir.</strong>Más autonomía, más confianza, más calidad de vida.</div>
           </div>
         </div>

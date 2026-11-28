@@ -33,9 +33,9 @@ export function Hero() {
         </div>
         <div className="hero-art" aria-hidden="true">
           <div className="rays"></div><div className="halo"></div>
-          <div className="ph a"><img src="/img/fotos/mabel.jpg" alt="" /><span className="cap">Mabel y Luis, nuestros primeros residentes</span></div>
-          <div className="ph b"><img src="/img/fotos/bandas.jpg" alt="" /><span className="cap">Moverse es vivir</span></div>
-          <img className="seal" src="/img/logo.webp" alt="" />
+          <div className="ph a"><img src="img/fotos/mabel.jpg" alt="" /><span className="cap">Mabel y Luis, nuestros primeros residentes</span></div>
+          <div className="ph b"><img src="img/fotos/bandas.jpg" alt="" /><span className="cap">Moverse es vivir</span></div>
+          <img className="seal" src="img/logo.webp" alt="" />
         </div>
       </div>
     </section>

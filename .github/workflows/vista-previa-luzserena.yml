@@ -1,0 +1,52 @@
+# =====================================================================
+#  LUZ SERENA · Vista previa en GitHub Pages
+#  Cada vez que se sube luzserena_master, compila la página (sin servidor,
+#  con datos de ejemplo) y la publica en:
+#    https://jeftoony-lgtm.github.io/BasePagWeb/
+#  También se puede correr a mano desde la pestaña "Actions".
+# =====================================================================
+
+name: Vista previa Luz Serena
+
+on:
+  push:
+    branches: [luzserena_master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Compilar la vista previa
+        run: npm run build
+        env:
+          PAGES_BASE: /BasePagWeb/
+          VITE_PREVIEW: "1"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: client/dist
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

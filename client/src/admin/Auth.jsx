@@ -14,7 +14,7 @@ const TEXTS = {
 };
 
 export const Logo = () => (
-  <div className="logo"><img src="/img/logo.webp" alt="" width="44" height="44" /><b>LUZ SERENA<small>Panel</small></b></div>
+  <div className="logo"><img src="img/logo.webp" alt="" width="44" height="44" /><b>LUZ SERENA<small>Panel</small></b></div>
 );
 
 export function AuthScreen({ onLoggedIn }) {

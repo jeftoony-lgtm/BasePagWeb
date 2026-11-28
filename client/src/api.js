@@ -5,6 +5,8 @@
 //        const posts = await api.posts();
 // =====================================================================
 
+import { PREVIEW, previewApi } from "./preview.js";
+
 const TOKEN_KEY = "luzserena-token";
 
 export const session = {
@@ -107,3 +109,6 @@ export const api = {
   updateProfile: (id, changes) => patch(`/profiles/${id}`, changes),
   activity: () => get("/activity"),
 };
+
+// Vista previa en GitHub Pages: lo que usa la página pública sale de datos de ejemplo
+if (PREVIEW) Object.assign(api, previewApi);

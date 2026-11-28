@@ -7,6 +7,7 @@ import { CONTACT, FAQ, HOME_PHOTOS, HOME_POINTS, SERVICES, TRUST, prettyWa } fro
 import { useSite } from "./store.jsx";
 import { Icon, WaIcon } from "./icons.jsx";
 import { Brand } from "./Topbar.jsx";
+import { PREVIEW } from "../preview.js";
 
 export function SectionHead({ eyebrow, title, text }) {
   return (
@@ -95,7 +96,7 @@ export function Footer() {
       <div className="wrap foot">
         <div><Brand light /><p style={{ marginTop: 14, maxWidth: "30em" }}>Residencia para la tercera edad en Melo, Cerro Largo. Cuidado integral para adultos mayores.</p></div>
         <div><h4>Contacto</h4>{CONTACT.direccion}, Melo<br />WhatsApp <a {...wa("Hola Luz Serena")}>{prettyWa(settings.whatsapp)}</a><br />{tel && <>Tel. <a href={`tel:+598${tel.replace(/\D/g, "").replace(/^0/, "")}`}>{tel}</a></>}</div>
-        <div><h4>Seguinos</h4><a href={`https://www.instagram.com/${CONTACT.instagram}/`} target="_blank" rel="noopener">Instagram</a><br /><a href="#blog">Novedades</a><br /><br /><a className="admin-link" href="/admin.html">Acceso del equipo</a></div>
+        <div><h4>Seguinos</h4><a href={`https://www.instagram.com/${CONTACT.instagram}/`} target="_blank" rel="noopener">Instagram</a><br /><a href="#blog">Novedades</a>{!PREVIEW && <><br /><br /><a className="admin-link" href="admin.html">Acceso del equipo</a></>}</div>
       </div>
     </footer>
   );
