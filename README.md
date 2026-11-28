@@ -7,6 +7,9 @@ manejen todo desde el celular.
 
 > Rama del proyecto base **BasePagWeb**. Trabajar en `luzserena_develop`; publicar desde `luzserena_master`.
 
+> **Vista previa para el cliente:** https://jeftoony-lgtm.github.io/BasePagWeb/ (se actualiza sola al subir `luzserena_master`;
+> sin servidor: blog y agenda de ejemplo, el formulario no guarda y no hay panel).
+
 - **Página y panel:** [React](https://react.dev) armado con [Vite](https://vite.dev).
 - **Servidor:** [Express](https://expressjs.com) (Node.js).
 - **Base de datos:** [MongoDB](https://www.mongodb.com) (consultas, residentes, blog, fotos, cuentas).
@@ -16,7 +19,7 @@ manejen todo desde el celular.
 ## Cómo está organizado
 
 ```
-BasePagWeb/luzserena/  (rama luzserena_develop)
+BasePagWeb/  (rama luzserena_develop)
 ├── client/                      La página y el panel (React + Vite)
 │   ├── index.html               Página pública
 │   ├── admin.html               Panel del equipo
